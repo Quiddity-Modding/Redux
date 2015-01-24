@@ -1,0 +1,10 @@
+{
+  "recipes": [
+    {
+      "held": "redux:Stick",
+      "target": "redux:Rock",
+      "result": "redux:RockStick",
+      "drops": []
+    }
+  ]
+}
