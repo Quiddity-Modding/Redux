@@ -28,9 +28,8 @@ public class ReduxResourcePack implements IResourcePack {
     private final File textureFolder;
     private final Set<String> matchingIds = new HashSet<String>();
 
-    public ReduxResourcePack(File reduxTextureFolder, String... matchingIds) {
+    public ReduxResourcePack(File reduxTextureFolder) {
         this.textureFolder = reduxTextureFolder;
-        this.matchingIds.addAll(Arrays.asList(matchingIds));
     }
 
     @Override

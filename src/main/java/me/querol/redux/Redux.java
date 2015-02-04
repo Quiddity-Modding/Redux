@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.relauncher.FMLInjectionData;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -29,24 +29,29 @@ import java.util.List;
 @Mod(modid = Redux.MODID, version = Redux.VERSION)
 public class Redux
 {
-    public static final String MODID = "modRedux";
-    public static final String RESOURCEID = "redux";
+    public static final String MODID = "redux";
     public static final String VERSION = "$DEV";
-    public static final File reduxFolder = new File(/* The minecraft dir */(File) FMLInjectionData.data()[6], "config" + File.separator + RESOURCEID);
-    public static final ReduxResourcePack resourcePack = new ReduxResourcePack(reduxFolder, RESOURCEID);
+    public static File reduxFolder;
+    public static ReduxResourcePack resourcePack;
 
     @SuppressWarnings("all")
     private Config reduxConfiguration = null;
     @SuppressWarnings("all")
     private ReduxBlockLoader blockLoader = null;
-    
+
     @EventHandler
-    public void init(FMLInitializationEvent event) {
+    public void preInit(FMLPreInitializationEvent event) {
+        Redux.reduxFolder = new File(event.getModConfigurationDirectory(), MODID);
         if (!reduxFolder.exists()) {
             // noinspection ResultOfMethodCallIgnored
             reduxFolder.mkdirs();
         }
+        Redux.resourcePack = new ReduxResourcePack(reduxFolder);
+        reduxConfiguration = JSONSingleton.getInstance().loadConfig();
+    }
 
+    @EventHandler
+    public void init(FMLInitializationEvent event) {
         // Copy over default Redux Pack
         File defaultPack = new File(reduxFolder, "default_pack");
         if (!defaultPack.exists()) {
@@ -73,6 +78,7 @@ public class Redux
                         IOUtils.closeQuietly(out);
                     }
                 }
+                zipFile.close();
                 // noinspection ResultOfMethodCallIgnored
                 tempArchiveFile.delete();
             } catch (IOException e) {
@@ -93,9 +99,7 @@ public class Redux
             }
         }
 
-        reduxConfiguration = JSONSingleton.getInstance().loadConfig();
         blockLoader = new ReduxBlockLoader(reduxConfiguration);
-
         blockLoader.loadBlocks();
     }
 

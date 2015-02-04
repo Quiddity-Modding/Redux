@@ -1,6 +1,6 @@
 [
 {
-  "modid": "modRedux",
+  "modid": "redux",
   "name": "Redux",
   "description": "The evil brainchild of TFC, BTW and tedium.",
   "version": "$DEV",
