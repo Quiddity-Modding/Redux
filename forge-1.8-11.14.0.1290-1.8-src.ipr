@@ -169,6 +169,13 @@
       </item>
     </group>
   </component>
+  <component name="ProjectDictionaryState">
+    <dictionary name="winsock">
+      <words>
+        <w>redux</w>
+      </words>
+    </dictionary>
+  </component>
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/forge-1.8-11.14.0.1290-1.8-src.iml" filepath="$PROJECT_DIR$/forge-1.8-11.14.0.1290-1.8-src.iml" />

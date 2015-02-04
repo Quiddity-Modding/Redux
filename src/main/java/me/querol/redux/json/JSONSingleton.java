@@ -4,27 +4,21 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.querol.redux.json.model.Blocks;
-import me.querol.redux.json.model.Recipes;
-import net.minecraftforge.fml.relauncher.FMLInjectionData;
+import me.querol.redux.Redux;
+import me.querol.redux.json.model.Config;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 
 /**
  * Created by winsock on 1/23/15.
  */
 public class JSONSingleton {
-
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final Charset charset = Charsets.UTF_8;
-    private static final File defaultSettingsFolder = new File(/* The minecraft dir */(File) FMLInjectionData.data()[6], "config" + File.separator + "redux");
+    private static final File configJSON = new File(Redux.reduxFolder, File.separator + "config.json");
 
     private static JSONSingleton ourInstance = new JSONSingleton();
 
@@ -33,32 +27,17 @@ public class JSONSingleton {
     }
 
     private JSONSingleton() {
-        if (!defaultSettingsFolder.exists()) {
-            defaultSettingsFolder.mkdirs();
-        }
-
-        File blocksJson = new File(defaultSettingsFolder, File.separator + "blocks.json");
-        File recipesJson = new File(defaultSettingsFolder, File.separator + "recipes.json");
         try {
-            if (!blocksJson.exists()) {
-                copyResource("me/querol/redux/json/model/blocks.json", blocksJson);
-            }
-            if (!recipesJson.exists()) {
-                copyResource("me/querol/redux/json/model/recipes.json", recipesJson);
+            if (!configJSON.exists()) {
+                Redux.copyResource("me/querol/redux/json/model/config.json", configJSON);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux configuration!", true);
         }
     }
 
-    public void loadJSON() {
-        Blocks blocks = (Blocks) loadJSON(new File(defaultSettingsFolder, File.separator + "blocks.json"), Blocks.class);
-        Recipes recipes = (Recipes) loadJSON(new File(defaultSettingsFolder, File.separator + "recipes.json"), Recipes.class);
-
-        /*
-        * FIXME This is just and example
-        */
-        System.out.println("test");
+    public Config loadConfig() {
+        return (Config) loadJSON(configJSON, Config.class);
     }
 
     public Object loadJSON(File file, Class<?> clazz) {
@@ -71,33 +50,5 @@ public class JSONSingleton {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private static void copyResource(String sourceFile, File destFile) throws IOException {
-        if (!destFile.exists()) {
-            destFile.createNewFile();
-        }
-
-        ReadableByteChannel source = null;
-        FileChannel destination = null;
-        FileOutputStream fileOutput = null;
-        InputStream resource = null;
-
-        try {
-            resource = JSONSingleton.class.getClassLoader().getResourceAsStream(sourceFile);
-            source = Channels.newChannel(resource);
-            fileOutput = new FileOutputStream(destFile);
-            destination = fileOutput.getChannel();
-            destination.transferFrom(source, 0, resource.available());
-        } finally {
-            if (source != null)
-                source.close();
-            if (destination != null)
-                destination.close();
-            if (fileOutput != null)
-                fileOutput.close();
-            if (resource != null)
-                resource.close();
-        }
     }
 }

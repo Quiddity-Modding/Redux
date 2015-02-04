@@ -6,6 +6,7 @@ package me.querol.redux.json.model;
 public class Block {
     private String name;
     private String description;
+    private String id;
 
     public String getName() {
         return name;
@@ -21,6 +22,14 @@ public class Block {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override
