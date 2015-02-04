@@ -1,45 +1,49 @@
 package me.querol.redux.loader;
 
-import net.minecraft.client.resources.IResourceManager;
+import com.google.common.collect.Sets;
 import net.minecraft.client.resources.IResourcePack;
-import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.ModContainer;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Created by winsock on 2/3/15.
+ * This class handles all of the resource requests for the external packs loaded by Redux
+ *
+ * @author winsock on 2/4/15.
  */
 public class ReduxResourcePack implements IResourcePack {
 
-    private final File reduxConfigFolder;
-    private final Set<String> matchingIds = new HashSet<String>();
+    private final ReduxPackModContainer reduxModPack;
 
-    public ReduxResourcePack(File reduxConfigFolder) {
-        this.reduxConfigFolder = reduxConfigFolder;
+    public ReduxResourcePack(ModContainer reduxPackModContainer) {
+        if (reduxPackModContainer instanceof ReduxPackModContainer) {
+            this.reduxModPack = (ReduxPackModContainer) reduxPackModContainer;
+        } else {
+            reduxModPack = null;
+        }
+        assert reduxModPack == null;
     }
 
     @Override
     public InputStream getInputStream(ResourceLocation resource) throws IOException {
         checkSandbox(resource.getResourcePath());
         InputStream resourceStream = null;
-        if (new File(reduxConfigFolder, resource.getResourceDomain() + File.separator + resource.getResourcePath()).exists()) {
-            resourceStream = new FileInputStream(new File(reduxConfigFolder, resource.getResourceDomain() + File.separator + resource.getResourcePath()));
-        } else if (new File(reduxConfigFolder, resource.getResourceDomain() + ".zip").exists()) {
-            ZipFile reduxPackZip = new ZipFile(new File(reduxConfigFolder, resource.getResourceDomain() + ".zip"));
+        if (reduxModPack.getSource().isDirectory()) {
+            resourceStream = new FileInputStream(new File(reduxModPack.getSource(), resource.getResourcePath()));
+        } else if (reduxModPack.getSource().isFile()) {
+            ZipFile reduxPackZip = new ZipFile(reduxModPack.getSource());
             ZipEntry requestedResource = reduxPackZip.getEntry(resource.getResourcePath());
             if (requestedResource != null) {
                 resourceStream = reduxPackZip.getInputStream(requestedResource);
@@ -53,12 +57,12 @@ public class ReduxResourcePack implements IResourcePack {
     public boolean resourceExists(ResourceLocation resource) {
         checkSandbox(resource.getResourcePath());
         boolean resourceExists = false;
-        if (new File(reduxConfigFolder, resource.getResourceDomain() + File.separator + resource.getResourcePath()).exists()) {
-            resourceExists = true;
-        } else if (new File(reduxConfigFolder, resource.getResourceDomain() + ".zip").exists()) {
+        if (reduxModPack.getSource().isDirectory()) {
+            resourceExists = new File(reduxModPack.getSource(), resource.getResourcePath()).exists();
+        } else if (reduxModPack.getSource().isFile()) {
             ZipFile reduxPackZip = null;
             try {
-                reduxPackZip = new ZipFile(new File(reduxConfigFolder, resource.getResourceDomain() + ".zip"));
+                reduxPackZip = new ZipFile(reduxModPack.getSource());
                 resourceExists = reduxPackZip.getEntry(resource.getResourcePath()) != null;
             } catch (IOException e) {
                 FMLLog.warning("Redux pack inconsistency. %s is inconsistent.", resource.getResourceDomain() + ".zip");
@@ -73,18 +77,9 @@ public class ReduxResourcePack implements IResourcePack {
         return resourceExists;
     }
 
-    public void addDomain(String string) {
-        matchingIds.add(string);
-        IResourceManager manager = FMLClientHandler.instance().getClient().getResourceManager();
-        if (manager instanceof SimpleReloadableResourceManager) {
-            SimpleReloadableResourceManager reloadableResourceManager = (SimpleReloadableResourceManager)manager;
-            reloadableResourceManager.reloadResourcePack(this);
-        }
-    }
-
     @Override
     public Set getResourceDomains() {
-        return matchingIds;
+        return Sets.newHashSet(reduxModPack.getModId());
     }
 
     @Override
@@ -99,7 +94,7 @@ public class ReduxResourcePack implements IResourcePack {
 
     @Override
     public String getPackName() {
-        return "External Redux Resources";
+        return reduxModPack.getName();
     }
 
     private void checkSandbox(String resource) {

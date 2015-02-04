@@ -2,38 +2,38 @@ package me.querol.redux;
 
 import me.querol.redux.json.JSONSingleton;
 import me.querol.redux.json.model.Config;
-import me.querol.redux.loader.ReduxBlockLoader;
-import me.querol.redux.loader.ReduxResourcePack;
-import net.minecraft.client.resources.IResourcePack;
-import net.minecraftforge.fml.client.FMLClientHandler;
+import me.querol.redux.loader.ReduxPackLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.relauncher.Side;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.List;
 
-
+/**
+ * This is the main Redux mod file.
+ *
+ * @author winsock on 2/3/15.
+ */
 @Mod(modid = Redux.MODID, version = Redux.VERSION)
-public class Redux
-{
+public class Redux {
+
     public static final String MODID = "redux";
     public static final String VERSION = "$DEV";
     public static File reduxFolder;
-    public static ReduxResourcePack resourcePack;
 
-    @SuppressWarnings("all")
+    @Mod.Instance(MODID)
+    public static Redux instance = null;
+
     private Config reduxConfiguration = null;
-    @SuppressWarnings("all")
-    private ReduxBlockLoader blockLoader = null;
+
+    public Redux() {
+        instance = this;
+    }
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -42,7 +42,6 @@ public class Redux
             // noinspection ResultOfMethodCallIgnored
             reduxFolder.mkdirs();
         }
-        Redux.resourcePack = new ReduxResourcePack(reduxFolder);
         reduxConfiguration = JSONSingleton.getInstance().loadConfig();
     }
 
@@ -58,21 +57,12 @@ public class Redux
             }
         }
 
-        if (event.getSide() == Side.CLIENT) {
-            Class<FMLClientHandler> fmlClientClass = FMLClientHandler.class;
-            try {
-                Field resourcePackListField = fmlClientClass.getDeclaredField("resourcePackList");
-                resourcePackListField.setAccessible(true);
-                @SuppressWarnings("unchecked")
-                List<IResourcePack> resourcePackList = (List<IResourcePack>) resourcePackListField.get(FMLClientHandler.instance());
-                resourcePackList.add(resourcePack);
-            } catch (ReflectiveOperationException e) {
-                FMLLog.severe("Error accessing resource pack list.\nDid FML Update?");
-            }
-        }
+        // Load the packs
+        new ReduxPackLoader(reduxConfiguration).loadPacks();
+    }
 
-        blockLoader = new ReduxBlockLoader(reduxConfiguration);
-        blockLoader.loadBlocks();
+    public Config getReduxConfiguration() {
+        return reduxConfiguration;
     }
 
     public static void copyResource(String sourceFile, File destFile) throws IOException {

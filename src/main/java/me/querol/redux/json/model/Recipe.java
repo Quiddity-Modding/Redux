@@ -3,8 +3,11 @@ package me.querol.redux.json.model;
 import java.util.Set;
 
 /**
- * Created by winsock on 1/23/15.
+ * JSON Object model that represents all Redux pack recipies
+ *
+ * @author winsock on 1/23/15.
  */
+@SuppressWarnings("all")
 public class Recipe {
     private String held;
     private String target;

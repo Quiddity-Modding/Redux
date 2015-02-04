@@ -14,7 +14,9 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 
 /**
- * Created by winsock on 1/23/15.
+ * This class handles interaction with all Redux JSON files.
+ *
+ * @author winsock on 1/23/15.
  */
 public class JSONSingleton {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();

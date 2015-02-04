@@ -3,8 +3,11 @@ package me.querol.redux.json.model;
 import java.util.List;
 
 /**
- * Created by winsock on 2/3/15.
+ * JSON Object model to represent Redux packs.
+ *
+ * @author winsock on 2/3/15.
  */
+@SuppressWarnings("all")
 public class Pack {
     private String name;
     private String id;

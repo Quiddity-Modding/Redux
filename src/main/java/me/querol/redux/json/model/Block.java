@@ -1,8 +1,11 @@
 package me.querol.redux.json.model;
 
 /**
- * Created by winsock on 1/23/15.
+ * JSON Object model that represents all Redux pack blocks.
+ *
+ * @author winsock on 1/23/15.
  */
+@SuppressWarnings("all")
 public class Block {
     private String name;
     private String description;
