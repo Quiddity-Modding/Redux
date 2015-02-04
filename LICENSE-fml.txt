@@ -1,4 +1,4 @@
-This minecraft mod, Forge Mod Loader, including all parts herein except as noted below,
+Forge Mod Loader, including all parts herein except as noted below,
 is licensed under the GNU LGPL v2.1 or later.
 
 Homepage: https://github.com/MinecraftForge/FML
