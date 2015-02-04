@@ -8,9 +8,7 @@ import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import scala.actors.threadpool.Arrays;
+import net.minecraftforge.fml.common.FMLLog;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -19,33 +17,60 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Created by winsock on 2/3/15.
  */
 public class ReduxResourcePack implements IResourcePack {
 
-    private final File textureFolder;
+    private final File reduxConfigFolder;
     private final Set<String> matchingIds = new HashSet<String>();
 
-    public ReduxResourcePack(File reduxTextureFolder) {
-        this.textureFolder = reduxTextureFolder;
+    public ReduxResourcePack(File reduxConfigFolder) {
+        this.reduxConfigFolder = reduxConfigFolder;
     }
 
     @Override
     public InputStream getInputStream(ResourceLocation resource) throws IOException {
-        String path = getReduxResource(resource);
-        if (path == null)
-            return null;
-        return new FileInputStream(new File(textureFolder, path));
+        checkSandbox(resource.getResourcePath());
+        InputStream resourceStream = null;
+        if (new File(reduxConfigFolder, resource.getResourceDomain() + File.separator + resource.getResourcePath()).exists()) {
+            resourceStream = new FileInputStream(new File(reduxConfigFolder, resource.getResourceDomain() + File.separator + resource.getResourcePath()));
+        } else if (new File(reduxConfigFolder, resource.getResourceDomain() + ".zip").exists()) {
+            ZipFile reduxPackZip = new ZipFile(new File(reduxConfigFolder, resource.getResourceDomain() + ".zip"));
+            ZipEntry requestedResource = reduxPackZip.getEntry(resource.getResourcePath());
+            if (requestedResource != null) {
+                resourceStream = reduxPackZip.getInputStream(requestedResource);
+                // Bad practice not closing the zip file. However closing it here would cause the input stream to be invalid
+            }
+        }
+        return resourceStream;
     }
 
     @Override
     public boolean resourceExists(ResourceLocation resource) {
-        String path = getReduxResource(resource);
-        if (path == null)
-            return false;
-        return new File(textureFolder, path).exists();
+        checkSandbox(resource.getResourcePath());
+        boolean resourceExists = false;
+        if (new File(reduxConfigFolder, resource.getResourceDomain() + File.separator + resource.getResourcePath()).exists()) {
+            resourceExists = true;
+        } else if (new File(reduxConfigFolder, resource.getResourceDomain() + ".zip").exists()) {
+            ZipFile reduxPackZip = null;
+            try {
+                reduxPackZip = new ZipFile(new File(reduxConfigFolder, resource.getResourceDomain() + ".zip"));
+                resourceExists = reduxPackZip.getEntry(resource.getResourcePath()) != null;
+            } catch (IOException e) {
+                FMLLog.warning("Redux pack inconsistency. %s is inconsistent.", resource.getResourceDomain() + ".zip");
+            } finally {
+                if (reduxPackZip != null) {
+                    try {
+                        reduxPackZip.close();
+                    } catch (IOException ignored) { }
+                }
+            }
+        }
+        return resourceExists;
     }
 
     public void addDomain(String string) {
@@ -75,12 +100,6 @@ public class ReduxResourcePack implements IResourcePack {
     @Override
     public String getPackName() {
         return "External Redux Resources";
-    }
-
-    private String getReduxResource(ResourceLocation resourceLocation) {
-        String packId = resourceLocation.getResourceDomain();
-        String parsedResourcePath = packId + File.separator + resourceLocation.getResourcePath();
-        return parsedResourcePath;
     }
 
     private void checkSandbox(String resource) {

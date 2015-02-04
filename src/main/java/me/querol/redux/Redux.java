@@ -13,16 +13,12 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Enumeration;
 import java.util.List;
 
 
@@ -53,34 +49,10 @@ public class Redux
     @EventHandler
     public void init(FMLInitializationEvent event) {
         // Copy over default Redux Pack
-        File defaultPack = new File(reduxFolder, "default_pack");
+        File defaultPack = new File(reduxFolder, "default_pack.zip");
         if (!defaultPack.exists()) {
-            // noinspection ResultOfMethodCallIgnored
-            defaultPack.mkdirs();
             try {
-                File tempArchiveFile = new File(defaultPack, "config.zip");
-                copyResource("me/querol/redux/json/model/default.zip", tempArchiveFile);
-                ZipFile zipFile = new ZipFile(tempArchiveFile);
-                Enumeration<? extends ZipArchiveEntry> entries = zipFile.getEntries();
-                while (entries.hasMoreElements()) {
-                    ZipArchiveEntry entry = entries.nextElement();
-                    File entryDestination = new File(defaultPack, entry.getName());
-                    // noinspection ResultOfMethodCallIgnored
-                    entryDestination.getParentFile().mkdirs();
-                    if (entry.isDirectory())
-                        // noinspection ResultOfMethodCallIgnored
-                        entryDestination.mkdirs();
-                    else {
-                        InputStream in = zipFile.getInputStream(entry);
-                        OutputStream out = new FileOutputStream(entryDestination);
-                        IOUtils.copy(in, out);
-                        IOUtils.closeQuietly(in);
-                        IOUtils.closeQuietly(out);
-                    }
-                }
-                zipFile.close();
-                // noinspection ResultOfMethodCallIgnored
-                tempArchiveFile.delete();
+                copyResource("me/querol/redux/json/model/default.zip", defaultPack);
             } catch (IOException e) {
                 FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux pack!", true);
             }

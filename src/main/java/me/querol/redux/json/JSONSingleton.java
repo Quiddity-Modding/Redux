@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.charset.Charset;
 
 /**
@@ -43,12 +44,15 @@ public class JSONSingleton {
     public Object loadJSON(File file, Class<?> clazz) {
         try {
             String json = Files.toString(file, charset);
-            Object parsedJson = gson.fromJson(json, clazz);
-            return parsedJson;
+            return gson.fromJson(json, clazz);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Object loadJSON(Reader input, Class<?> clazz) {
+        return gson.fromJson(input, clazz);
     }
 }
