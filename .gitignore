@@ -3,6 +3,15 @@ forge*
 *-fml.*
 *MinecraftForge*
 
+#minecraft
+/crash-reports
+/logs
+/config
+/mods
+/saves
+options.txt
+usernamecache.json
+
 #eclipse
 /bin
 /.settings
