@@ -1,3 +1,7 @@
+#forge
+*-fml.*
+*MinecraftForge*
+
 #eclipse
 /bin
 /.settings
@@ -6,6 +10,8 @@
 #idea
 /.idea
 *.iml
+*.ipr
+*.iws
 
 #gradle
 /build
