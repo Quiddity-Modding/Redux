@@ -1,4 +1,4 @@
-package mod.quiddity.redux.json.model;
+package mods.quiddity.redux.json.model;
 
 import java.util.List;
 

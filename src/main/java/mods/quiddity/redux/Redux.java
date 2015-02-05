@@ -1,8 +1,8 @@
-package mod.quiddity.redux;
+package mods.quiddity.redux;
 
-import mod.quiddity.redux.json.JSONSingleton;
-import mod.quiddity.redux.json.model.Config;
-import mod.quiddity.redux.loader.ReduxPackLoader;
+import mods.quiddity.redux.json.JSONSingleton;
+import mods.quiddity.redux.json.model.Config;
+import mods.quiddity.redux.loader.ReduxPackLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;

@@ -1,9 +1,9 @@
-package mod.quiddity.redux.loader;
+package mods.quiddity.redux.loader;
 
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
-import mod.quiddity.redux.Redux;
-import mod.quiddity.redux.json.model.Pack;
+import mods.quiddity.redux.Redux;
+import mods.quiddity.redux.json.model.Pack;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.versioning.ArtifactVersion;
 import net.minecraftforge.fml.common.versioning.VersionRange;

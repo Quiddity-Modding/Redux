@@ -1,4 +1,4 @@
-package mod.quiddity.redux.json.model;
+package mods.quiddity.redux.json.model;
 
 /**
  * JSON Object model that represents all Redux pack blocks.

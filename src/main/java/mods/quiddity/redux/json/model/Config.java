@@ -1,7 +1,7 @@
-package mod.quiddity.redux.json.model;
+package mods.quiddity.redux.json.model;
 
-import mod.quiddity.redux.Redux;
-import mod.quiddity.redux.json.JSONSingleton;
+import mods.quiddity.redux.Redux;
+import mods.quiddity.redux.json.JSONSingleton;
 import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;

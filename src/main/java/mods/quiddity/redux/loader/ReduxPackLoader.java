@@ -1,10 +1,10 @@
-package mod.quiddity.redux.loader;
+package mods.quiddity.redux.loader;
 
-import mod.quiddity.redux.Redux;
-import mod.quiddity.redux.ReduxBlock;
-import mod.quiddity.redux.json.model.Block;
-import mod.quiddity.redux.json.model.Config;
-import mod.quiddity.redux.json.model.Pack;
+import mods.quiddity.redux.Redux;
+import mods.quiddity.redux.ReduxBlock;
+import mods.quiddity.redux.json.model.Block;
+import mods.quiddity.redux.json.model.Config;
+import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;

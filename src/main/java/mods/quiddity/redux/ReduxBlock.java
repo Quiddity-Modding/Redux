@@ -1,7 +1,7 @@
-package mod.quiddity.redux;
+package mods.quiddity.redux;
 
-import mod.quiddity.redux.json.model.Block;
-import mod.quiddity.redux.json.model.Pack;
+import mods.quiddity.redux.json.model.Block;
+import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 

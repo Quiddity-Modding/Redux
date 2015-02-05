@@ -1,4 +1,4 @@
-package mod.quiddity.redux.loader;
+package mods.quiddity.redux.loader;
 
 import com.google.common.collect.Sets;
 import net.minecraft.client.resources.IResourcePack;
