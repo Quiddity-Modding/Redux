@@ -32,7 +32,7 @@ public class JSONSingleton {
     private JSONSingleton() {
         try {
             if (!configJSON.exists()) {
-                Redux.copyResource("me/querol/redux/json/model/config.json", configJSON);
+                Redux.copyResource(Redux.GROUP + "/redux/json/model/config.json", configJSON);
             }
         } catch (IOException e) {
             FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux configuration!", true);

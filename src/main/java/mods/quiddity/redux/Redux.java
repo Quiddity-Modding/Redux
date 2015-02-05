@@ -24,6 +24,7 @@ public class Redux {
 
     public static final String MODID = "redux";
     public static final String VERSION = "$DEV";
+    public static final String GROUP = "mods/quiddity";
     public static File reduxFolder;
 
     @Mod.Instance(MODID)
@@ -51,7 +52,7 @@ public class Redux {
         File defaultPack = new File(reduxFolder, "default_pack.zip");
         if (!defaultPack.exists()) {
             try {
-                copyResource("me/querol/redux/json/model/default.zip", defaultPack);
+                copyResource(GROUP + "/redux/json/model/default.zip", defaultPack);
             } catch (IOException e) {
                 FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux pack!", true);
             }
