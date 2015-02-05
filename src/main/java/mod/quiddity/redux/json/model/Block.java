@@ -1,4 +1,4 @@
-package me.querol.redux.json.model;
+package mod.quiddity.redux.json.model;
 
 /**
  * JSON Object model that represents all Redux pack blocks.

@@ -1,11 +1,11 @@
-package me.querol.redux.json;
+package mod.quiddity.redux.json;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.querol.redux.Redux;
-import me.querol.redux.json.model.Config;
+import mod.quiddity.redux.Redux;
+import mod.quiddity.redux.json.model.Config;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.File;

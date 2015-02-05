@@ -1,10 +1,10 @@
-package me.querol.redux.loader;
+package mod.quiddity.redux.loader;
 
-import me.querol.redux.Redux;
-import me.querol.redux.ReduxBlock;
-import me.querol.redux.json.model.Block;
-import me.querol.redux.json.model.Config;
-import me.querol.redux.json.model.Pack;
+import mod.quiddity.redux.Redux;
+import mod.quiddity.redux.ReduxBlock;
+import mod.quiddity.redux.json.model.Block;
+import mod.quiddity.redux.json.model.Config;
+import mod.quiddity.redux.json.model.Pack;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;

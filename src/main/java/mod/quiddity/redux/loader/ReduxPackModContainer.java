@@ -1,9 +1,9 @@
-package me.querol.redux.loader;
+package mod.quiddity.redux.loader;
 
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
-import me.querol.redux.Redux;
-import me.querol.redux.json.model.Pack;
+import mod.quiddity.redux.Redux;
+import mod.quiddity.redux.json.model.Pack;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.versioning.ArtifactVersion;
 import net.minecraftforge.fml.common.versioning.VersionRange;

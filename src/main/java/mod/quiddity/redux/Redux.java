@@ -1,8 +1,8 @@
-package me.querol.redux;
+package mod.quiddity.redux;
 
-import me.querol.redux.json.JSONSingleton;
-import me.querol.redux.json.model.Config;
-import me.querol.redux.loader.ReduxPackLoader;
+import mod.quiddity.redux.json.JSONSingleton;
+import mod.quiddity.redux.json.model.Config;
+import mod.quiddity.redux.loader.ReduxPackLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;

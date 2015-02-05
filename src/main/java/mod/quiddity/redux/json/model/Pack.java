@@ -1,4 +1,4 @@
-package me.querol.redux.json.model;
+package mod.quiddity.redux.json.model;
 
 import java.util.List;
 

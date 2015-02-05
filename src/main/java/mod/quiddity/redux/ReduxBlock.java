@@ -1,7 +1,7 @@
-package me.querol.redux;
+package mod.quiddity.redux;
 
-import me.querol.redux.json.model.Block;
-import me.querol.redux.json.model.Pack;
+import mod.quiddity.redux.json.model.Block;
+import mod.quiddity.redux.json.model.Pack;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
 

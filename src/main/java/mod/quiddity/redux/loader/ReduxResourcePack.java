@@ -1,4 +1,4 @@
-package me.querol.redux.loader;
+package mod.quiddity.redux.loader;
 
 import com.google.common.collect.Sets;
 import net.minecraft.client.resources.IResourcePack;
