@@ -4,6 +4,7 @@ import mods.quiddity.redux.json.JSONSingleton;
 import mods.quiddity.redux.json.model.Config;
 import mods.quiddity.redux.loader.ReduxPackLoader;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
