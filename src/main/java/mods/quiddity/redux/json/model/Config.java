@@ -1,5 +1,6 @@
 package mods.quiddity.redux.json.model;
 
+import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.JSONSingleton;
 import net.minecraftforge.fml.common.FMLLog;
@@ -16,8 +17,9 @@ import java.util.*;
  *
  * @author winsock on 2/3/15.
  */
+@SuppressWarnings("all")
 public class Config {
-    @SuppressWarnings("all")
+    private List<Flags<String, ?>> features;
     private List<String> packs;
 
     private transient List<String> humanPackNames;
@@ -57,14 +59,14 @@ public class Config {
                 packSourceFileMap.put(p, file);
             }
         }
-        return parsedPacks;
+        return ImmutableList.copyOf(parsedPacks);
     }
 
     public List<String> getPackNames() {
         if (humanPackNames == null) {
             getPacks();
         }
-        return humanPackNames;
+        return ImmutableList.copyOf(humanPackNames);
     }
 
     public File getSourceForPack(Pack p) {
@@ -72,6 +74,10 @@ public class Config {
             getPacks();
         }
         return packSourceFileMap.get(p);
+    }
+
+    public List<Flags<String, ?>> getFeatures() {
+        return ImmutableList.copyOf(features);
     }
 
     @Override

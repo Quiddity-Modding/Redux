@@ -9,11 +9,13 @@ import java.util.List;
  */
 @SuppressWarnings("all")
 public class Pack {
-    private String name;
     private String id;
+    private String name;
+    private String author;
+    private String description;
 
     private List<Block> blocks;
-    private List<Recipe> recipes;
+    private List<Item> items;
 
     public String getName() {
         return name;
@@ -22,20 +24,13 @@ public class Pack {
     public String getId() {
         return id;
     }
+
     public List<Block> getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(List<Block> blocks) {
-        this.blocks = blocks;
-    }
-
-    public List<Recipe> getRecipes() {
-        return recipes;
-    }
-
-    public void setRecipes(List<Recipe> recipes) {
-        this.recipes = recipes;
+    public List<Item> getItems() {
+        return items;
     }
 
     @Override
