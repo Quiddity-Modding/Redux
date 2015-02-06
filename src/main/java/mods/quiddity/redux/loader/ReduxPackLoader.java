@@ -71,5 +71,8 @@ public class ReduxPackLoader {
              */
         }
         FMLCommonHandler.instance().findContainerFor(Redux.instance).getMetadata().childMods = children;
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            FMLClientHandler.instance().addSpecialModEntries((ArrayList<ModContainer>) children);
+        }
     }
 }

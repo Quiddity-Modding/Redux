@@ -14,7 +14,7 @@ public class Pack {
     private String author;
     private String description;
 
-    private List<Block> blocks;
+    private List<Block> block_list;
     private List<Item> items;
 
     public String getName() {
@@ -26,11 +26,19 @@ public class Pack {
     }
 
     public List<Block> getBlocks() {
-        return blocks;
+        return block_list;
     }
 
     public List<Item> getItems() {
         return items;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     @Override

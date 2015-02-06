@@ -52,7 +52,7 @@ public class Redux {
         File defaultPack = new File(reduxFolder, "default_pack.zip");
         if (!defaultPack.exists()) {
             try {
-                copyResource(GROUP + "/redux/json/model/default.zip", defaultPack);
+                copyResource(GROUP + "/redux/json/model/default_pack.zip", defaultPack);
             } catch (IOException e) {
                 FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux pack!", true);
             }

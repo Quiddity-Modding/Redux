@@ -18,7 +18,7 @@ public class Block {
     private String name;
     private String description;
 
-    private Material material;
+    private String material;
     private String creative_tab;
     private String creative_tab_icon;
     private int tick_rate;
@@ -61,7 +61,11 @@ public class Block {
     }
 
     public Material getMaterial() {
-        return material;
+        try {
+            return (Material) Material.class.getField(material).get(null);
+        } catch (ReflectiveOperationException e) {
+            return Material.air;
+        }
     }
 
     public CreativeTabs getCreativeTab() {

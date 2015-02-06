@@ -3,10 +3,8 @@ package mods.quiddity.redux;
 import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.command.CommandResultStats;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
@@ -22,9 +20,6 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
     private final Pack pack;
     private final Block reduxBlock;
     public static final PropertyInteger SUCCESS_COUNT_META = PropertyInteger.create("lastSuccessCount", 0, 15);
-
-    public static final PropertyEnum COMMAND_RESULTS = PropertyEnum.create("commandResults", CommandResultStats.Type.class, CommandResultStats.Type.values());
-    public static final PropertyInteger COMMAND_RESULTS_VALUE = PropertyInteger.create("commandResultsValue", Integer.MIN_VALUE, Integer.MAX_VALUE);
 
 
     public ReduxBlock(Pack parentPack, Block reduxBlock) {

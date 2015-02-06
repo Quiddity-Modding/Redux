@@ -38,6 +38,8 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
     protected final Block reduxBlock;
     protected int lastSuccessCount = 0;
+    protected CommandResultStats.Type lastResultType = CommandResultStats.Type.SUCCESS_COUNT;
+    protected int lastResultAmount = 0;
 
     @SuppressWarnings("all")
     private final List<ReduxBlockEventReceiver> eventReceivers = new ArrayList<ReduxBlockEventReceiver>();
@@ -61,6 +63,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
     public void writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound);
         compound.setInteger("lastSuccessCount", lastSuccessCount);
+        compound.setInteger(lastResultType.getTypeName(), lastResultAmount);
     }
 
     public void readFromNBT(NBTTagCompound compound) {
@@ -140,9 +143,8 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
         @Override
         public void setCommandStat(CommandResultStats.Type type, int amount) {
-            BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
-            IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
-            ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.COMMAND_RESULTS, type).withProperty(ReduxBlock.COMMAND_RESULTS_VALUE, amount));
+            ReduxCommandBlockTileEntity.this.lastResultType = type;
+            ReduxCommandBlockTileEntity.this.lastResultAmount = amount;
         }
 
         @SubscribeEvent
