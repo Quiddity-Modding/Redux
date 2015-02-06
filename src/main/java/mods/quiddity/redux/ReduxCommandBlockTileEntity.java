@@ -38,7 +38,7 @@ import java.util.Set;
  */
 public class ReduxCommandBlockTileEntity extends TileEntity {
 
-    protected Block reduxBlock = null;
+    protected volatile Block reduxBlock = null;
     protected int lastSuccessCount = 0;
     protected CommandResultStats.Type lastResultType = CommandResultStats.Type.SUCCESS_COUNT;
     protected int lastResultAmount = 0;
@@ -49,7 +49,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
     public ReduxCommandBlockTileEntity() {}
 
-    public void setupTileEntity(Block reduxBlock) {
+    public synchronized void setupTileEntity(Block reduxBlock) {
         this.reduxBlock = reduxBlock;
 
         for (Trigger trigger : reduxBlock.getScript()) {
