@@ -25,7 +25,7 @@ import java.nio.channels.ReadableByteChannel;
 public class Redux {
 
     public static final String MODID = "redux";
-    public static final String VERSION = "$DEV";
+    public static final String VERSION = "${version}";
     public static final String GROUP = "mods/quiddity";
     public static File reduxFolder;
 
