@@ -163,12 +163,14 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         @SuppressWarnings("all")
         public void receiveEvent(Event ignored) {
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
-            BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
-            IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
-            for (String s : triggerScript.getCommands()) {
-                this.successCount = icommandmanager.executeCommand(this, s);
-                ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
-                ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
+            synchronized (ReduxCommandBlockTileEntity.this) {
+                BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
+                IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
+                for (String s : triggerScript.getCommands()) {
+                    this.successCount = icommandmanager.executeCommand(this, s);
+                    ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
+                    ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
+                }
             }
         }
     }

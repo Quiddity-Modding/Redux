@@ -1,6 +1,10 @@
 package mods.quiddity.redux;
 
 import net.minecraft.server.gui.IUpdatePlayerListBox;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 /**
  * The extension that adds a OnTick event.
@@ -16,8 +20,15 @@ public class ReduxCommandBlockTickableTileEntity extends ReduxCommandBlockTileEn
     public void update() {
         ticks++;
         if (ticks >= reduxBlock.getTickRate()) {
-            for (ReduxBlockEventReceiver receiver : tickEventReceivers) {
-                receiver.receiveEvent(null);
+            for (final ReduxBlockEventReceiver receiver : tickEventReceivers) {
+                FMLCommonHandler.callFuture(new FutureTask<Void>(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        receiver.receiveEvent(null);
+                        return null;
+                    }
+                }));
+
             }
             ticks = 0;
         }
