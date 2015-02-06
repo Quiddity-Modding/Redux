@@ -26,10 +26,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The tile entity for Redux Pack blocks that have custom command scripts.
@@ -75,7 +74,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         super.readFromNBT(compound);
         this.lastSuccessCount = compound.getInteger("lastSuccessCount");
 
-        if (reduxBlock == null && ! (worldObj == null || worldObj.isRemote)) {
+        if (reduxBlock == null && this.hasWorldObj() && !this.getWorld().isRemote) {
             setupTileEntity(((ReduxBlock) this.getWorld().getBlockState(this.pos).getBlock()).getReduxBlock());
         }
     }
@@ -166,8 +165,34 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             synchronized (ReduxCommandBlockTileEntity.this) {
                 BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
                 IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
+                Stack<Integer> commandResultStack = new Stack<Integer>();
+
                 for (String s : triggerScript.getCommands()) {
-                    this.successCount = icommandmanager.executeCommand(this, s);
+                    if (s.startsWith("/pop")) {
+                        String[] split = s.split(Pattern.quote(" "));
+                        int popCount = 1;
+                        if (split.length == 2) {
+                            try {
+                                popCount = Integer.parseInt(split[1]);
+                            } catch (NumberFormatException e) {
+                                FMLLog.warning("Invalid /pop command issued. Command %s\nPopping once", s);
+                            }
+                        }
+                        for (;popCount > 0; popCount--)
+                            commandResultStack.pop();
+                    }
+
+                    String parsedCommand = s;
+                    while ((parsedCommand.contains("$(PEEK)") || parsedCommand.contains("$(POP)")) && !commandResultStack.empty()) {
+                        if (parsedCommand.contains("$(PEEK)") && (!parsedCommand.contains("$(POP)") || (parsedCommand.indexOf("$(PEEK)") < parsedCommand.indexOf("$(POP)")))) {
+                            parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(PEEK)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.peek())));
+                        } else {
+                            parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(POP)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.pop())));
+                        }
+                    }
+
+                    this.successCount = icommandmanager.executeCommand(this, parsedCommand);
+                    commandResultStack.push(successCount);
                     ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
                     ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
                 }

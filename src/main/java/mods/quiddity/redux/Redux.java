@@ -3,11 +3,13 @@ package mods.quiddity.redux;
 import mods.quiddity.redux.json.JSONSingleton;
 import mods.quiddity.redux.json.model.Config;
 import mods.quiddity.redux.loader.ReduxPackLoader;
+import net.minecraft.command.ICommand;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 import java.io.*;
 import java.nio.channels.Channels;
@@ -60,6 +62,13 @@ public class Redux {
 
         // Load the packs
         new ReduxPackLoader(reduxConfiguration).loadPacks();
+    }
+
+    @EventHandler
+    public void onServerStart(FMLServerStartingEvent event) {
+        for (ICommand command : ReduxCommands.getCommands()) {
+            event.registerServerCommand(command);
+        }
     }
 
     public Config getReduxConfiguration() {
