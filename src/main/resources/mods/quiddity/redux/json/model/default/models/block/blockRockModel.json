@@ -1,0 +1,39 @@
+{
+    "__createdwith": "opl's Model Creator",
+    "ambientocclusion": false,
+    "textures": {
+        "computerFront": "default_pack:computerFront",
+        "computerBack": "default_pack:computerBack",
+        "computerTop": "default_pack:computerTop",
+        "computerBottom": "default_pack:computerBottom",
+        "computerLeft": "default_pack:computerLeft",
+        "computerRight": "default_pack:computerRight"
+    },
+    "elements": [
+        {
+            "from": [0,0,0],
+            "to": [16,16,16],
+            "faces": {
+                "up": {
+                    "uv": [0,16,16,0],
+                    "texture": "#computerTop"
+                },
+                "down": {
+                    "texture": "#computerBottom"
+                },
+                "west": {
+                    "texture": "#computerRight"
+                },
+                "east": {
+                    "texture": "#computerLeft"
+                },
+                "north": {
+                    "texture": "#computerFront"
+                },
+                "south": {
+                    "texture": "#computerBack"
+                }
+            }
+        }
+    ]
+}
