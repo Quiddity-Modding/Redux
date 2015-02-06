@@ -1,17 +1,17 @@
 {
-	“id” : “default_pack”,
-	“name” : “Default Pack”,
-	“author” : “Ecu”,
-	“description” : “Test default pack”,
-	“block_list” : [
+	"id" : "default_pack",
+	"name" : "Default Pack",
+	"author" : "Ecu",
+	"description" : "Test default pack",
+	"block_list" : [
 		{
-			“id” : “thung”,
-			“name” : “Thing-a-ma-bob”,
-			“description” : “Derpity Derp”,
-			“material” : “stone”,
-			“creative_tab” : “misc”,
-			“tick_rate” : “0”,
-			“script” : []
+			"id" : "thung",
+			"name" : "Thing-a-ma-bob",
+			"description" : "Derpity Derp",
+			"material" : "stone",
+			"creative_tab" : "misc",
+			"tick_rate" : "0",
+			"script" : []
 		}
 	]
 }
