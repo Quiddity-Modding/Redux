@@ -6,9 +6,13 @@ import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * Stub class that represents all Redux pack blocks.
@@ -29,6 +33,10 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         this.pack = parentPack;
         this.reduxBlock = reduxBlock;
         this.setDefaultState(this.blockState.getBaseState().withProperty(SUCCESS_COUNT_META, 0));
+
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            FMLClientHandler.instance().getClient().getBlockRendererDispatcher().getBlockModelShapes().registerBlockWithStateMapper(this, (new StateMap.Builder()).addPropertiesToIgnore(SUCCESS_COUNT_META).build());
+        }
     }
 
     @Override

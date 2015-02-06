@@ -18,6 +18,10 @@ public class ReduxCommandBlockTickableTileEntity extends ReduxCommandBlockTileEn
 
     @Override
     public void update() {
+        if (worldObj.isRemote)
+            return;
+        if (reduxBlock == null)
+            setupTileEntity(((ReduxBlock) this.getWorld().getBlockState(this.pos).getBlock()).getReduxBlock());
         ticks++;
         if (ticks >= reduxBlock.getTickRate()) {
             for (final ReduxBlockEventReceiver receiver : tickEventReceivers) {

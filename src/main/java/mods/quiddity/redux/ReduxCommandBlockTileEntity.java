@@ -75,7 +75,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         super.readFromNBT(compound);
         this.lastSuccessCount = compound.getInteger("lastSuccessCount");
 
-        if (reduxBlock == null) {
+        if (reduxBlock == null && ! (worldObj == null || worldObj.isRemote)) {
             setupTileEntity(((ReduxBlock) this.getWorld().getBlockState(this.pos).getBlock()).getReduxBlock());
         }
     }
