@@ -8,6 +8,7 @@ import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLLog;
@@ -62,6 +63,10 @@ public class ReduxPackLoader {
                     registerBlockMethod.invoke(gameData, mcBlock, p.getId() + ":" + b.getId(), -1);
                     registerItemMethod.invoke(gameData, blockItem, p.getId() + ":" + b.getId(), -1);
                     GameData.getBlockItemMap().put(mcBlock, blockItem);
+
+                    if (mcBlock.hasTileEntity(null) && mcBlock.getTileEntityClass() != null) {
+                        TileEntity.addMapping(mcBlock.getTileEntityClass(), b.getId());
+                    }
                 } catch (ReflectiveOperationException e) {
                     FMLLog.severe("Error accessing FML GameData.\nRedux will not function properly!\nDid FML Update?");
                 }

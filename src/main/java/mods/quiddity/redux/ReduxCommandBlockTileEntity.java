@@ -27,7 +27,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The tile entity for Redux Pack blocks that have custom command scripts.
@@ -36,18 +38,21 @@ import java.util.List;
  */
 public class ReduxCommandBlockTileEntity extends TileEntity {
 
-    protected final Block reduxBlock;
+    protected Block reduxBlock = null;
     protected int lastSuccessCount = 0;
     protected CommandResultStats.Type lastResultType = CommandResultStats.Type.SUCCESS_COUNT;
     protected int lastResultAmount = 0;
 
     @SuppressWarnings("all")
-    private final List<ReduxBlockEventReceiver> eventReceivers = new ArrayList<ReduxBlockEventReceiver>();
+    protected final List<ReduxBlockEventReceiver> eventReceivers = new ArrayList<ReduxBlockEventReceiver>();
+    protected final Set<ReduxBlockEventReceiver> tickEventReceivers = new HashSet<ReduxBlockEventReceiver>();
 
-    public ReduxCommandBlockTileEntity(Block block) {
-        reduxBlock = block;
+    public ReduxCommandBlockTileEntity() {}
 
-        for (Trigger trigger : block.getScript()) {
+    public void setupTileEntity(Block reduxBlock) {
+        this.reduxBlock = reduxBlock;
+
+        for (Trigger trigger : reduxBlock.getScript()) {
             try {
                 eventReceivers.add(new ReduxBlockEventReceiver(trigger));
             } catch (ReflectiveOperationException e) {
@@ -69,12 +74,20 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
         this.lastSuccessCount = compound.getInteger("lastSuccessCount");
+
+        if (reduxBlock == null) {
+            setupTileEntity(((ReduxBlock) this.getWorld().getBlockState(this.pos).getBlock()).getReduxBlock());
+        }
     }
 
     public Packet getDescriptionPacket() {
         NBTTagCompound nbttagcompound = new NBTTagCompound();
         this.writeToNBT(nbttagcompound);
         return new S35PacketUpdateTileEntity(this.pos, 2, nbttagcompound);
+    }
+
+    public void addTickEventReceiver(ReduxBlockEventReceiver receiver) {
+        tickEventReceivers.add(receiver);
     }
 
     protected class ReduxBlockEventReceiver implements ICommandSender {
@@ -93,8 +106,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 Method eventReceiver = this.getClass().getDeclaredMethod("receiveEvent", Event.class);
                 privateEventRegister.invoke(MinecraftForge.EVENT_BUS, triggerScript.getTriggerEvent(), this, eventReceiver, FMLCommonHandler.instance().findContainerFor(Redux.instance));
             } else if (ReduxCommandBlockTileEntity.this instanceof  ReduxCommandBlockTickableTileEntity) {
-                ReduxCommandBlockTickableTileEntity tickableTileEntity = (ReduxCommandBlockTickableTileEntity) ReduxCommandBlockTileEntity.this;
-                tickableTileEntity.addTickEventReceiver(this);
+                ReduxCommandBlockTileEntity.this.addTickEventReceiver(this);
             }
         }
 

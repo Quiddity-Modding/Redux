@@ -4,6 +4,7 @@ import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
@@ -21,13 +22,13 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
     private final Block reduxBlock;
     public static final PropertyInteger SUCCESS_COUNT_META = PropertyInteger.create("lastSuccessCount", 0, 15);
 
-
     public ReduxBlock(Pack parentPack, Block reduxBlock) {
         super(reduxBlock.getMaterial());
         setUnlocalizedName(reduxBlock.getName());
         setCreativeTab(reduxBlock.getCreativeTab());
         this.pack = parentPack;
         this.reduxBlock = reduxBlock;
+        this.setDefaultState(this.blockState.getBaseState().withProperty(SUCCESS_COUNT_META, 0));
     }
 
     @Override
@@ -42,11 +43,18 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {
-        if (reduxBlock.tickable())
-            return new ReduxCommandBlockTickableTileEntity(reduxBlock);
-        if (!reduxBlock.getScript().isEmpty())
-            return new ReduxCommandBlockTileEntity(reduxBlock);
-        return null;
+        ReduxCommandBlockTileEntity te = null;
+
+        if (reduxBlock.tickable()) {
+            te = new ReduxCommandBlockTickableTileEntity();
+        } else if (!reduxBlock.getScript().isEmpty()) {
+            te = new ReduxCommandBlockTileEntity();
+        }
+
+        if (te != null) {
+            te.setupTileEntity(reduxBlock);
+        }
+        return te;
     }
 
     @Override
@@ -65,5 +73,22 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
             return (Integer)state.getValue(SUCCESS_COUNT_META);
         }
         return 0;
+    }
+
+    public Class<? extends ReduxCommandBlockTileEntity> getTileEntityClass() {
+        if (reduxBlock.tickable())
+            return ReduxCommandBlockTickableTileEntity.class;
+        if (!reduxBlock.getScript().isEmpty())
+            return ReduxCommandBlockTileEntity.class;
+        return null;
+    }
+
+    @Override
+    protected BlockState createBlockState() {
+        return new BlockState(this, SUCCESS_COUNT_META);
+    }
+
+    public Block getReduxBlock() {
+        return reduxBlock;
     }
 }
