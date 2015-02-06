@@ -16,11 +16,11 @@ import java.util.List;
  */
 @SuppressWarnings("all")
 public class Trigger {
-    private TriggerEvent triggerEvent;
+    private String triggerEvent;
     private List<String> commands;
 
     public Class<? extends Event> getTriggerEvent() {
-        return triggerEvent.forgeEventClass;
+        return TriggerEvent.valueOf(triggerEvent).forgeEventClass;
     }
 
     public List<String> getCommands() {
