@@ -67,7 +67,7 @@ public class ReduxPackLoader {
                     if (mcBlock.hasTileEntity(null) && mcBlock.getTileEntityClass() != null) {
                         TileEntity.addMapping(mcBlock.getTileEntityClass(), b.getId());
                     }
-                } catch (ReflectiveOperationException e) {
+                } catch (Exception e) {
                     FMLLog.severe("Error accessing FML GameData.\nRedux will not function properly!\nDid FML Update?");
                 }
             }

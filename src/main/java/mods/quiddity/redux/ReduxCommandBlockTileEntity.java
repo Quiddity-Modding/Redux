@@ -58,7 +58,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         for (Trigger trigger : reduxBlock.getScript()) {
             try {
                 eventReceivers.add(new ReduxBlockEventReceiver(trigger));
-            } catch (ReflectiveOperationException e) {
+            } catch (Exception e) {
                 FMLLog.severe("Error accessing FML EventBus.\nRedux will not function properly!\nDid FML Update?");
             }
         }

@@ -63,7 +63,7 @@ public class Block {
     public Material getMaterial() {
         try {
             return (Material) Material.class.getField(material).get(null);
-        } catch (ReflectiveOperationException e) {
+        } catch (Exception e) {
             return Material.air;
         }
     }
