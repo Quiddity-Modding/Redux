@@ -17,6 +17,10 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.ChunkWatchEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.ModContainer;
@@ -93,6 +97,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
         private final Trigger triggerScript;
         private int successCount;
+        protected Event lastEvent = null;
 
         public ReduxBlockEventReceiver(Trigger triggerScript) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
             this.triggerScript = triggerScript;
@@ -107,6 +112,10 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             } else if (ReduxCommandBlockTileEntity.this instanceof  ReduxCommandBlockTickableTileEntity) {
                 ReduxCommandBlockTileEntity.this.addTickEventReceiver(this);
             }
+        }
+
+        public Event getLastEvent() {
+            return lastEvent;
         }
 
         @Override
@@ -158,15 +167,46 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             ReduxCommandBlockTileEntity.this.lastResultAmount = amount;
         }
 
+        private String getTriggerStringForEvent(Event event) {
+            if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()) != null) {
+                if (event instanceof WorldEvent) {
+                    WorldEvent worldEvent = (WorldEvent)event;
+                    return String.valueOf(worldEvent.world.provider.getDimensionId());
+                } else if (event instanceof ChunkWatchEvent) {
+                    ChunkWatchEvent chunkWatchEvent = (ChunkWatchEvent) event;
+                    return chunkWatchEvent.player.getName();
+                }
+
+                switch (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass())) {
+                    case BlockBreakEvent:
+                        BlockEvent.BreakEvent breakEvent = (BlockEvent.BreakEvent) event;
+                        return breakEvent.getPlayer().getName();
+                    case BlockHarvestDropsEvent:
+                        BlockEvent.HarvestDropsEvent harvestDropsEvent = (BlockEvent.HarvestDropsEvent) event;
+                        return harvestDropsEvent.harvester.getName();
+                    case BlockMultiPlaceEvent:
+                    case BlockPlaceEvent:
+                        BlockEvent.PlaceEvent placeEvent = (BlockEvent.PlaceEvent)event;
+                        return placeEvent.player.getName();
+                    case ServerChatEvent:
+                        ServerChatEvent serverChatEvent = (ServerChatEvent) event;
+                        return serverChatEvent.username;
+                    default:
+                        return String.valueOf(ReduxCommandBlockTileEntity.this.getWorld().provider.getDimensionId());
+                }
+            }
+            return "";
+        }
+
         @SubscribeEvent
-        @SuppressWarnings("all")
-        public void receiveEvent(Event ignored) {
+        public void receiveEvent(Event event) {
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
             synchronized (ReduxCommandBlockTileEntity.this) {
                 BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
                 IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
                 Stack<Integer> commandResultStack = new Stack<Integer>();
 
+                lastEvent = event;
                 for (String s : triggerScript.getCommands()) {
                     if (s.startsWith("/pop")) {
                         String[] split = s.split(Pattern.quote(" "));
@@ -183,11 +223,13 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     }
 
                     String parsedCommand = s;
-                    while ((parsedCommand.contains("$(PEEK)") || parsedCommand.contains("$(POP)")) && !commandResultStack.empty()) {
+                    while ((parsedCommand.contains("$(PEEK)") || parsedCommand.contains("$(POP)") || parsedCommand.contains("$(TRIGGER)")) && !commandResultStack.empty()) {
                         if (parsedCommand.contains("$(PEEK)") && (!parsedCommand.contains("$(POP)") || (parsedCommand.indexOf("$(PEEK)") < parsedCommand.indexOf("$(POP)")))) {
                             parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(PEEK)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.peek())));
-                        } else {
+                        } else if (parsedCommand.contains("$(POP)")) {
                             parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(POP)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.pop())));
+                        } else if (parsedCommand.contains("$(TRIGGER)")) {
+                            parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(TRIGGER)"), getTriggerStringForEvent(event));
                         }
                     }
 

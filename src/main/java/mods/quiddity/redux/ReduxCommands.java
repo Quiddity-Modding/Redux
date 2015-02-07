@@ -1,10 +1,8 @@
 package mods.quiddity.redux;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
+import mods.quiddity.redux.json.model.Trigger;
+import net.minecraft.command.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +14,37 @@ import java.util.List;
  */
 public class ReduxCommands {
 
-    public static final ReduxCommand DEBUG = new ReduxCommand("redux-debug", "/redux-debug", new ReduxCommandRunnable() {
+    public static final ReduxCommand TEST_FOR_TRIGGER = new ReduxCommand("testfortrigger", "/testfortrigger <trigger type>", new ReduxCommandRunnable() {
         @Override
         public void run(ICommandSender sender, String... args) throws CommandException {
+            if (args.length < 1)
+                throw new CommandException("Incorrect parameters");
+            String trigger = args[0];
+            try {
+                Trigger.TriggerEvent event = Trigger.TriggerEvent.valueOf(trigger);
+                if (event != null) {
+                    if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+                        ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
 
+                        if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(reduxBlockEventReceiver.getLastEvent().getClass()) == event) {
+                            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 1);
+                            return;
+                        }
+                    } else {
+                        throw new CommandException("This command is only useful in Redux Pack Blocks");
+                    }
+                }
+            } catch (IllegalArgumentException ignored) {
+                throw new CommandException("Trigger type %s does not exist!", trigger);
+            }
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
         }
     });
 
     private static final List<ICommand> commands = new ArrayList<ICommand>();
 
     static {
-        commands.add(DEBUG);
+        commands.add(TEST_FOR_TRIGGER);
     }
 
     public static List<ICommand> getCommands() {

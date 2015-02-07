@@ -17,7 +17,12 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "1.0"
+buildNumber = System.getenv('BUILD_NUMBER')
+version = "Dev-" + buildNumber
+if (System.getenv('RELEASE')) {
+    version = System.getenv('RELEASE_STRING')
+}
+
 group= "mods.quiddity" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "redux"
 

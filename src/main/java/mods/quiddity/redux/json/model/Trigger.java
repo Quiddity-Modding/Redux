@@ -27,7 +27,7 @@ public class Trigger {
         return ImmutableList.copyOf(commands);
     }
 
-    private enum TriggerEvent {
+    public enum TriggerEvent {
         BlockHarvestDropsEvent(BlockEvent.HarvestDropsEvent.class),
         BlockBreakEvent(BlockEvent.BreakEvent.class),
         BlockPlaceEvent(BlockEvent.PlaceEvent.class),
@@ -46,6 +46,15 @@ public class Trigger {
         private Class<? extends Event> forgeEventClass;
         private TriggerEvent(Class<? extends Event> forgeEvent) {
             this.forgeEventClass = forgeEvent;
+        }
+
+        public static TriggerEvent getTriggerEventFromForgeEvent(Class<? extends Event> forgeEvent) {
+            for (TriggerEvent e: TriggerEvent.values()) {
+                if (e.forgeEventClass == forgeEvent) {
+                    return e;
+                }
+            }
+            return null;
         }
     }
 }
