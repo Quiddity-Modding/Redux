@@ -32,7 +32,6 @@ public class ReduxCommandBlockTickableTileEntity extends ReduxCommandBlockTileEn
                         return null;
                     }
                 }));
-
             }
             ticks = 0;
         }
