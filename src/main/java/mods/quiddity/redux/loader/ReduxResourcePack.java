@@ -41,15 +41,15 @@ public class ReduxResourcePack implements IResourcePack {
             return null;
         }
         InputStream resourceStream = null;
-        if (reduxModPack.getSource().isDirectory()) {
-            resourceStream = new FileInputStream(new File(reduxModPack.getSource(), resource.getResourcePath()));
-        } else if (reduxModPack.getSource().isFile()) {
+        if (reduxModPack.getSource().isFile() && reduxModPack.getSource().getName().endsWith(".zip")) {
             ZipFile reduxPackZip = new ZipFile(reduxModPack.getSource());
             ZipEntry requestedResource = reduxPackZip.getEntry(resource.getResourcePath());
             if (requestedResource != null) {
                 resourceStream = reduxPackZip.getInputStream(requestedResource);
                 // Bad practice not closing the zip file. However closing it here would cause the input stream to be invalid
             }
+        } else if (reduxModPack.getSource().getParentFile().isDirectory()) {
+            resourceStream = new FileInputStream(new File(reduxModPack.getSource().getParentFile(), resource.getResourcePath()));
         }
         return resourceStream;
     }
@@ -60,9 +60,7 @@ public class ReduxResourcePack implements IResourcePack {
             return false;
         }
         boolean resourceExists = false;
-        if (reduxModPack.getSource().isDirectory()) {
-            resourceExists = new File(reduxModPack.getSource(), resource.getResourcePath()).exists();
-        } else if (reduxModPack.getSource().isFile()) {
+        if (reduxModPack.getSource().isFile() && reduxModPack.getSource().getName().endsWith(".zip")) {
             ZipFile reduxPackZip = null;
             try {
                 reduxPackZip = new ZipFile(reduxModPack.getSource());
@@ -76,6 +74,8 @@ public class ReduxResourcePack implements IResourcePack {
                     } catch (IOException ignored) { }
                 }
             }
+        } else if (reduxModPack.getSource().getParentFile().isDirectory()) {
+             resourceExists = new File(reduxModPack.getSource().getParentFile(), resource.getResourcePath()).exists();
         }
         return resourceExists;
     }
