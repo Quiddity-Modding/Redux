@@ -17,8 +17,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-buildNumber = System.getenv('BUILD_NUMBER')
-version = "Dev-" + buildNumber
+version = "Dev-" + System.getenv('BUILD_NUMBER')
 if (System.getenv('RELEASE')) {
     version = System.getenv('RELEASE_STRING')
 }
