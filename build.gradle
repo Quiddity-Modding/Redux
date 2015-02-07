@@ -17,7 +17,7 @@ buildscript {
 
 apply plugin: 'forge'
 
-version = "Dev-" + System.getenv('BUILD_NUMBER')
+version = "dev-" + System.getenv('BUILD_NUMBER')
 if (System.getenv('RELEASE').equalsIgnoreCase("true")) {
     version = System.getenv('RELEASE_STRING')
 }
@@ -70,5 +70,37 @@ processResources
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+    }
+}
+
+// because the normal output has been made to be obfuscated
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = 'deobf'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+artifacts {
+    archives deobfJar
+    archives sourcesJar
+}
+
+task("uploadJars", dependsOn:"build") {
+    
+    description = "uploads JARs"
+
+    if (project.hasProperty("local_maven")) {
+	    apply plugin: 'maven'
+            uploadArchives {
+                repositories {
+                    mavenDeployer {
+                        repository(url: "file://${local_maven}")
+                }
+            }
+        }
     }
 }
