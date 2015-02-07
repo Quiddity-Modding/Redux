@@ -157,16 +157,4 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
         return reduxBlock.isFullCube();
     }
-
-    @Override
-    public int getRenderType() {
-        Block reduxBlock;
-        if (this.reduxBlock == null)
-            reduxBlock = blockThreadLocal.get();
-        else
-            reduxBlock = this.reduxBlock;
-        if (reduxBlock == null) throw new AssertionError();
-
-        return reduxBlock.isFullCube() ? super.getRenderType() : 0;
-    }
 }

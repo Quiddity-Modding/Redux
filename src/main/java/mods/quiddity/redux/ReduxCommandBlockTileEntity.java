@@ -25,6 +25,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
 import java.util.*;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
     protected final Set<ReduxBlockEventReceiver> tickEventReceivers = new HashSet<ReduxBlockEventReceiver>();
     protected final Set<ReduxBlockEventReceiver> eventReceivers = new HashSet<ReduxBlockEventReceiver>();
+    protected final Map<String, String> reduxVariables = new HashMap<String, String>();
 
     public ReduxCommandBlockTileEntity() {}
 
@@ -214,47 +216,44 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         public void receiveEvent(Event event) {
             if (worldObj.isRemote)
                 return;
-
             BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
             IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
             // Check if the block has changed as result of an event. I.E. BlockBreak
             if (ReduxCommandBlockTileEntity.this.getWorld().getBlockState(pos).getBlock().getClass() != ReduxBlock.class) {
                 return;
             }
+            reduxVariables.put(Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()).name(), getTriggerStringForEvent(event));
 
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
             Stack<Integer> commandResultStack = new Stack<Integer>();
 
             lastEvent = event;
             for (String s : triggerScript.getCommands()) {
-                if (s.startsWith("/pop")) {
-                    String[] split = s.split(Pattern.quote(" "));
-                    int popCount = 1;
-                    if (split.length == 2) {
-                        try {
-                            popCount = Integer.parseInt(split[1]);
-                        } catch (NumberFormatException e) {
-                            Redux.instance.getLogger().warn("Invalid /pop command issued. Command %s\nPopping once", s);
-                        }
-                    }
-                    for (; popCount > 0; popCount--)
-                        commandResultStack.pop();
-                }
-
                 String parsedCommand = s;
-                while ((parsedCommand.contains("$(PEEK)") || parsedCommand.contains("$(POP)") || parsedCommand.contains("$(TRIGGER)")) && !commandResultStack.empty()) {
-                    if (parsedCommand.contains("$(PEEK)") && (!parsedCommand.contains("$(POP)") || (parsedCommand.indexOf("$(PEEK)") < parsedCommand.indexOf("$(POP)")))) {
-                        parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(PEEK)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.peek())));
-                    } else if (parsedCommand.contains("$(POP)")) {
-                        parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(POP)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.pop())));
-                    } else if (parsedCommand.contains("$(TRIGGER)")) {
-                        parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(TRIGGER)"), getTriggerStringForEvent(event));
+
+                Pattern reduxPattern = Pattern.compile("\\$redux\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
+                Matcher reduxMatcher = reduxPattern.matcher(parsedCommand);
+                Pattern commandPattern = Pattern.compile("\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
+                while (reduxMatcher.find() && !reduxMatcher.hitEnd()) {
+                    MatchResult result = reduxMatcher.toMatchResult();
+                    Matcher commandMatcher = commandPattern.matcher(result.group());
+                    if (!commandMatcher.find())
+                        continue;
+                    String command = commandMatcher.toMatchResult().group().replaceAll("\\[", "").replaceAll("\\]", "");
+
+                    if (command.equalsIgnoreCase("PEEK") || command.equalsIgnoreCase("POP")) {
+                        if (command.equalsIgnoreCase("PEEK")) {
+                            reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(String.valueOf(commandResultStack.peek())));
+                        } else if (command.equalsIgnoreCase("POP")) {
+                            reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(String.valueOf(commandResultStack.pop())));
+                        }
+                    } else if (reduxVariables.containsKey(command)) {
+                        reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(reduxVariables.get(command)));
                     }
                 }
 
                 this.successCount = icommandmanager.executeCommand(this, parsedCommand);
                 commandResultStack.push(successCount);
-
                 ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
                 ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
             }

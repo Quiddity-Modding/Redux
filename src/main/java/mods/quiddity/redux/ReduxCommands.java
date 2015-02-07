@@ -5,6 +5,7 @@ import mods.quiddity.redux.json.model.Trigger;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.*;
+import scala.Int;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,6 +100,38 @@ public class ReduxCommands {
                 }
             } else {
                 throw new CommandException("This command is only useful in Redux Pack Blocks");
+            }
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+        }
+    });
+
+    public static final ReduxCommand TEST = new ReduxCommand("test", "/test <value(string or integer) 1> <operation> <value(string or integer) 2>", new ReduxCommandRunnable() {
+        @Override
+        public void run(ICommandSender sender, String... args) throws CommandException {
+            if (args.length < 3)
+                throw new CommandException("Incorrect parameters");
+            try {
+                if (args[1].equalsIgnoreCase("&&")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Boolean.valueOf(args[0]) && Boolean.valueOf(args[2])) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase("||")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Boolean.valueOf(args[0]) || Boolean.valueOf(args[2])) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase("==")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase("!=")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (!Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0);
+                } if (args[1].equalsIgnoreCase("&")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) & Integer.valueOf(args[2]));
+                } if (args[1].equalsIgnoreCase("|")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) | Integer.valueOf(args[2]));
+                } if (args[1].equalsIgnoreCase("^")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) ^ Integer.valueOf(args[2]));
+                }
+            } catch (NumberFormatException e) {
+                if (args[1].equalsIgnoreCase("==")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, args[0].equalsIgnoreCase(args[2]) ? 1 : 0);
+                } else {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, !args[0].equalsIgnoreCase(args[2]) ? 1 : 0);
+                }
             }
             sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
         }
