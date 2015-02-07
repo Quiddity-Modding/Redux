@@ -19,10 +19,13 @@ public class Block {
     private String description;
 
     private String material;
+    private boolean full_cube;
+    private boolean directional;
+    private List<Flags<String, Integer>> custom_properties;
     private String creative_tab;
     private String creative_tab_icon;
     private int tick_rate;
-    private List<String> oreDictionaryNames;
+    private List<String> ore_dictionary;
 
     private List<Trigger> script;
 
@@ -68,6 +71,14 @@ public class Block {
         }
     }
 
+    public boolean shouldAddFacingProperty() {
+        return directional;
+    }
+
+    public boolean isFullCube() {
+        return full_cube;
+    }
+
     public CreativeTabs getCreativeTab() {
         if (creativeTabObject == null) {
             for (CreativeTabs tab : CreativeTabs.creativeTabArray) {
@@ -93,7 +104,11 @@ public class Block {
     }
 
     public List<String> getOreDictionaryNames() {
-        return ImmutableList.copyOf(oreDictionaryNames);
+        return ImmutableList.copyOf(ore_dictionary);
+    }
+
+    public List<Flags<String, Integer>> getCustomProperties() {
+        return ImmutableList.copyOf(custom_properties);
     }
 
     @Override

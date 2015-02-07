@@ -2,6 +2,8 @@ package mods.quiddity.redux;
 
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.json.model.Trigger;
+import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.*;
 
 import java.util.ArrayList;
@@ -41,10 +43,73 @@ public class ReduxCommands {
         }
     });
 
+    public static final ReduxCommand TEST_FOR_PROPERTY = new ReduxCommand("testforproperty", "/testforproperty <property name> <integer value>", new ReduxCommandRunnable() {
+        @Override
+        public void run(ICommandSender sender, String... args) throws CommandException {
+            if (args.length < 2)
+                throw new CommandException("Incorrect parameters");
+            int testValue;
+            try {
+                testValue = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                throw new CommandException("Second parameter must be an integer!");
+            }
+
+            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+                ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
+                IBlockState blockState = sender.getEntityWorld().getBlockState(reduxBlockEventReceiver.getPosition());
+                if (blockState.getBlock() instanceof ReduxBlock) {
+                    PropertyInteger property = ((ReduxBlock) blockState.getBlock()).getPropertyFromName(args[0]);
+                    if (property != null && blockState.getValue(property) != null && blockState.getValue(property).equals(testValue)) {
+                        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, ((Integer) blockState.getValue(property)) > 15 ? 15 : ((Integer) blockState.getValue(property)));
+                    }
+                } else {
+                    throw new CommandException("This command is only useful in Redux Pack Blocks");
+                }
+            } else {
+                throw new CommandException("This command is only useful in Redux Pack Blocks");
+            }
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+        }
+    });
+
+    public static final ReduxCommand SET_PROPERTY = new ReduxCommand("setproperty", "/setproperty <property name> <integer value>", new ReduxCommandRunnable() {
+        @Override
+        public void run(ICommandSender sender, String... args) throws CommandException {
+            if (args.length < 2)
+                throw new CommandException("Incorrect parameters");
+            int setValue;
+            try {
+                setValue = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                throw new CommandException("Second parameter must be an integer!");
+            }
+
+            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+                ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
+                IBlockState blockState = sender.getEntityWorld().getBlockState(reduxBlockEventReceiver.getPosition());
+                if (blockState.getBlock() instanceof ReduxBlock) {
+                    PropertyInteger property = ((ReduxBlock) blockState.getBlock()).getPropertyFromName(args[0]);
+                    if (property != null && blockState.getValue(property) != null) {
+                        reduxBlockEventReceiver.getEntityWorld().setBlockState(reduxBlockEventReceiver.getPosition(), blockState.withProperty(property, setValue));
+                        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 1);
+                    }
+                } else {
+                    throw new CommandException("This command is only useful in Redux Pack Blocks");
+                }
+            } else {
+                throw new CommandException("This command is only useful in Redux Pack Blocks");
+            }
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+        }
+    });
+
     private static final List<ICommand> commands = new ArrayList<ICommand>();
 
     static {
         commands.add(TEST_FOR_TRIGGER);
+        commands.add(TEST_FOR_PROPERTY);
+        commands.add(SET_PROPERTY);
     }
 
     public static List<ICommand> getCommands() {

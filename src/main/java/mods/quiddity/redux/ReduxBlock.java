@@ -1,18 +1,24 @@
 package mods.quiddity.redux;
 
 import mods.quiddity.redux.json.model.Block;
+import mods.quiddity.redux.json.model.Flags;
 import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Stub class that represents all Redux pack blocks.
@@ -21,10 +27,13 @@ import net.minecraftforge.fml.relauncher.Side;
  */
 public class ReduxBlock extends net.minecraft.block.Block implements ITileEntityProvider {
 
-    @SuppressWarnings("all")
+
     private final Pack pack;
     private final Block reduxBlock;
     public static final PropertyInteger SUCCESS_COUNT_META = PropertyInteger.create("lastSuccessCount", 0, 15);
+
+    private final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
+    private Map<String, PropertyInteger> customBlockProperties = new HashMap<String, PropertyInteger>();
 
     public ReduxBlock(Pack parentPack, Block reduxBlock) {
         super(reduxBlock.getMaterial());
@@ -32,10 +41,20 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         setCreativeTab(reduxBlock.getCreativeTab());
         this.pack = parentPack;
         this.reduxBlock = reduxBlock;
-        this.setDefaultState(this.blockState.getBaseState().withProperty(SUCCESS_COUNT_META, 0));
+
+        IBlockState defaultBlockState = this.blockState.getBaseState().withProperty(SUCCESS_COUNT_META, 0);
+        if (reduxBlock.shouldAddFacingProperty())
+            defaultBlockState = defaultBlockState.withProperty(FACING, null);
+        for (Flags<String, Integer> customProperty : reduxBlock.getCustomProperties()) {
+            PropertyInteger customIntegerProperty = PropertyInteger.create(customProperty.getKey(), Integer.MIN_VALUE, Integer.MAX_VALUE);
+            customBlockProperties.put(customProperty.getKey(), customIntegerProperty);
+            defaultBlockState = defaultBlockState.withProperty(customIntegerProperty, customProperty.getValue());
+        }
+        this.setDefaultState(defaultBlockState);
 
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-            FMLClientHandler.instance().getClient().getBlockRendererDispatcher().getBlockModelShapes().registerBlockWithStateMapper(this, (new StateMap.Builder()).addPropertiesToIgnore(SUCCESS_COUNT_META).build());
+            StateMap.Builder stateMapBuilder = (new StateMap.Builder()).addPropertiesToIgnore(SUCCESS_COUNT_META);
+            FMLClientHandler.instance().getClient().getBlockRendererDispatcher().getBlockModelShapes().registerBlockWithStateMapper(this, stateMapBuilder.build());
         }
     }
 
@@ -77,6 +96,10 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         return tileentity instanceof ReduxCommandBlockTileEntity ? ((ReduxCommandBlockTileEntity)tileentity).getLastSuccessCount() : 0;
     }
 
+    public PropertyInteger getPropertyFromName(String name) {
+        return customBlockProperties.get(name);
+    }
+
     public int getMetaFromState(IBlockState state) {
         if (hasTileEntity(state) && !state.getPropertyNames().isEmpty()) {
             return (Integer)state.getValue(SUCCESS_COUNT_META);
@@ -94,6 +117,24 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     @Override
     protected BlockState createBlockState() {
-        return new BlockState(this, SUCCESS_COUNT_META);
+        if (reduxBlock.shouldAddFacingProperty())
+            return new BlockState(this, SUCCESS_COUNT_META, FACING);
+        else
+            return new BlockState(this, SUCCESS_COUNT_META);
+    }
+
+    @Override
+    public boolean isOpaqueCube() {
+        return !reduxBlock.isFullCube();
+    }
+
+    @Override
+    public boolean isFullCube() {
+        return !reduxBlock.isFullCube();
+    }
+
+    @Override
+    public int getRenderType() {
+        return reduxBlock.isFullCube() ? super.getRenderType() : 0;
     }
 }
