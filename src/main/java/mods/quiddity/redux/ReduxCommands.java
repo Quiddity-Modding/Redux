@@ -119,9 +119,17 @@ public class ReduxCommands {
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0);
                 } else if (args[1].equalsIgnoreCase("!=")) {
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (!Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0);
-                } if (args[1].equalsIgnoreCase("&")) {
+                } else if (args[1].equalsIgnoreCase(">")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) > 0) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase("<")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) < 0) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase(">=")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) >= 0) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase("=<")) {
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) <= 0) ? 1 : 0);
+                } else if (args[1].equalsIgnoreCase("&")) {
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) & Integer.valueOf(args[2]));
-                } if (args[1].equalsIgnoreCase("|")) {
+                } else if (args[1].equalsIgnoreCase("|")) {
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) | Integer.valueOf(args[2]));
                 } if (args[1].equalsIgnoreCase("^")) {
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) ^ Integer.valueOf(args[2]));
