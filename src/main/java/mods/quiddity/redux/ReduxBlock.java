@@ -37,8 +37,12 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     public ReduxBlock(Pack parentPack, Block reduxBlock) {
         super(reduxBlock.getMaterial());
+
         setUnlocalizedName(reduxBlock.getName());
         setCreativeTab(reduxBlock.getCreativeTab());
+        this.lightOpacity = reduxBlock.isFullCube() ? 255 : 0;
+        this.fullBlock = reduxBlock.isFullCube();
+        this.translucent = reduxBlock.isFullCube();
         this.pack = parentPack;
         this.reduxBlock = reduxBlock;
 
@@ -125,11 +129,15 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     @Override
     public boolean isOpaqueCube() {
+        if (reduxBlock == null)
+            return false;
         return !reduxBlock.isFullCube();
     }
 
     @Override
     public boolean isFullCube() {
+        if (reduxBlock == null)
+            return false;
         return !reduxBlock.isFullCube();
     }
 
