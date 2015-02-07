@@ -24,11 +24,13 @@ public class Config {
 
     private transient List<String> humanPackNames;
     private transient Map<Pack, File> packSourceFileMap;
+    private transient Map<String, Pack> idToPack;
 
     public List<Pack> getPacks() {
         List<Pack> parsedPacks = new ArrayList<Pack>();
         humanPackNames = new ArrayList<String>();
         packSourceFileMap = new HashMap<Pack, File>();
+        idToPack = new HashMap<String, Pack>();
         for (String pack : packs) {
             File file = null;
             Pack p = null;
@@ -57,6 +59,7 @@ public class Config {
                 humanPackNames.add(p.getName());
                 // File cannot be null if p isn't null
                 packSourceFileMap.put(p, file);
+                idToPack.put(p.getId(), p);
             }
         }
         return ImmutableList.copyOf(parsedPacks);
@@ -74,6 +77,10 @@ public class Config {
             getPacks();
         }
         return packSourceFileMap.get(p);
+    }
+
+    public Pack getPackFromId(String id) {
+        return idToPack.get(id);
     }
 
     public List<Flags<String, ?>> getFeatures() {

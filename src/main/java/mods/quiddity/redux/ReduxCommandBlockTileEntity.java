@@ -1,6 +1,7 @@
 package mods.quiddity.redux;
 
 import mods.quiddity.redux.json.model.Block;
+import mods.quiddity.redux.json.model.Pack;
 import mods.quiddity.redux.json.model.Trigger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandResultStats;
@@ -16,20 +17,14 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventBus;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,77 +36,96 @@ import java.util.regex.Pattern;
  */
 public class ReduxCommandBlockTileEntity extends TileEntity {
 
+    private String packId = "";
+
     protected volatile Block reduxBlock = null;
     protected int lastSuccessCount = 0;
     protected CommandResultStats.Type lastResultType = CommandResultStats.Type.SUCCESS_COUNT;
     protected int lastResultAmount = 0;
 
-    @SuppressWarnings("all")
-    protected final List<ReduxBlockEventReceiver> eventReceivers = new ArrayList<ReduxBlockEventReceiver>();
     protected final Set<ReduxBlockEventReceiver> tickEventReceivers = new HashSet<ReduxBlockEventReceiver>();
+    protected final Set<ReduxBlockEventReceiver> eventReceivers = new HashSet<ReduxBlockEventReceiver>();
 
     public ReduxCommandBlockTileEntity() {}
-
-    public synchronized void setupTileEntity(Block reduxBlock) {
-        this.reduxBlock = reduxBlock;
-
-        for (Trigger trigger : reduxBlock.getScript()) {
-            try {
-                eventReceivers.add(new ReduxBlockEventReceiver(trigger));
-            } catch (Exception e) {
-                LogManager.getLogger().fatal("Error accessing FML EventBus.\nRedux will not function properly!\nDid FML Update?");
-            }
-        }
-    }
 
     public int getLastSuccessCount() {
         return lastSuccessCount;
     }
-
-    public void writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
-        compound.setInteger("lastSuccessCount", lastSuccessCount);
-        compound.setInteger(lastResultType.getTypeName(), lastResultAmount);
-    }
-
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
-        this.lastSuccessCount = compound.getInteger("lastSuccessCount");
-
-        if (reduxBlock == null && this.hasWorldObj() && !this.getWorld().isRemote) {
-            setupTileEntity(((ReduxBlock) this.getWorld().getBlockState(this.pos).getBlock()).getReduxBlock());
-        }
-    }
-
-    public Packet getDescriptionPacket() {
-        NBTTagCompound nbttagcompound = new NBTTagCompound();
-        this.writeToNBT(nbttagcompound);
-        return new S35PacketUpdateTileEntity(this.pos, 2, nbttagcompound);
-    }
-
     public void addTickEventReceiver(ReduxBlockEventReceiver receiver) {
         tickEventReceivers.add(receiver);
     }
 
-    protected class ReduxBlockEventReceiver implements ICommandSender {
+    public void init(String packId, Block reduxBlock) {
+        this.packId = packId;
+        this.reduxBlock = reduxBlock;
 
+        for (Trigger trigger : reduxBlock.getScript()) {
+            // We have to keep a local strong reference. Otherwise GC would remove our event receiver right away.
+            ReduxBlockEventReceiver receiver = new ReduxBlockEventReceiver(trigger);
+            eventReceivers.add(receiver);
+            ReduxEventDispatcher.getInstance().registerEventReceiver(receiver);
+        }
+    }
+
+    public void setupTileEntity(String blockId) {
+        Pack p = Redux.instance.getReduxConfiguration().getPackFromId(packId);
+        if (p == null) throw new AssertionError();
+        for (Block b : p.getBlocks()) {
+            if (b.getId().equalsIgnoreCase(blockId))
+                reduxBlock = b;
+        }
+        if (reduxBlock == null) throw new AssertionError();
+
+        tickEventReceivers.clear();
+        eventReceivers.clear();
+
+        for (Trigger trigger : reduxBlock.getScript()) {
+            // We have to keep a local strong reference. Otherwise GC would remove our event receiver right away.
+            ReduxBlockEventReceiver receiver = new ReduxBlockEventReceiver(trigger);
+            eventReceivers.add(receiver);
+            ReduxEventDispatcher.getInstance().registerEventReceiver(receiver);
+        }
+    }
+
+    @Override
+    public void writeToNBT(NBTTagCompound compound) {
+        super.writeToNBT(compound);
+        compound.setInteger("lastSuccessCount", lastSuccessCount);
+        compound.setInteger(lastResultType.getTypeName(), lastResultAmount);
+        compound.setString("pack", packId);
+        compound.setString("block", reduxBlock.getId());
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound compound) {
+        super.readFromNBT(compound);
+        this.lastSuccessCount = compound.getInteger("lastSuccessCount");
+        this.packId = compound.getString("pack");
+        setupTileEntity(compound.getString("block"));
+    }
+
+    @Override
+    public Packet getDescriptionPacket() {
+        NBTTagCompound nbttagcompound = new NBTTagCompound();
+        this.writeToNBT(nbttagcompound);
+        return new S35PacketUpdateTileEntity(this.pos, 0, nbttagcompound);
+    }
+
+    protected class ReduxBlockEventReceiver implements ICommandSender {
         private final Trigger triggerScript;
         private int successCount;
         protected Event lastEvent = null;
 
-        public ReduxBlockEventReceiver(Trigger triggerScript) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        public ReduxBlockEventReceiver(Trigger triggerScript) {
             this.triggerScript = triggerScript;
 
-            if (triggerScript.getTriggerEvent() != Event.class) {
-                Class<?> eventBusClass = EventBus.class;
-                Method privateEventRegister = eventBusClass.getDeclaredMethod("register", Class.class, Object.class, Method.class, ModContainer.class);
-                privateEventRegister.setAccessible(true);
-
-                Method eventReceiver = this.getClass().getDeclaredMethod("receiveEvent", Event.class);
-                privateEventRegister.invoke(MinecraftForge.EVENT_BUS, triggerScript.getTriggerEvent(), this, eventReceiver, FMLCommonHandler.instance().findContainerFor(Redux.instance));
-            } else if (ReduxCommandBlockTileEntity.this instanceof  ReduxCommandBlockTickableTileEntity) {
+            if (ReduxCommandBlockTileEntity.this instanceof ReduxCommandBlockTickableTileEntity && triggerScript.getTriggerEvent().getForgeEventClass() == Event.class) {
                 ReduxCommandBlockTileEntity.this.addTickEventReceiver(this);
             }
+        }
+
+        public Trigger getTriggerScript() {
+            return triggerScript;
         }
 
         public Event getLastEvent() {
@@ -198,46 +212,52 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             return "";
         }
 
-        @SubscribeEvent
         public void receiveEvent(Event event) {
+            if (worldObj.isRemote)
+                return;
+
+            BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
+            IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
+            // Check if the block has changed as result of an event. I.E. BlockBreak
+            if (ReduxCommandBlockTileEntity.this.getWorld().getBlockState(pos).getBlock().getClass() != ReduxBlock.class) {
+                return;
+            }
+
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
-            synchronized (ReduxCommandBlockTileEntity.this) {
-                BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
-                IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
-                Stack<Integer> commandResultStack = new Stack<Integer>();
+            Stack<Integer> commandResultStack = new Stack<Integer>();
 
-                lastEvent = event;
-                for (String s : triggerScript.getCommands()) {
-                    if (s.startsWith("/pop")) {
-                        String[] split = s.split(Pattern.quote(" "));
-                        int popCount = 1;
-                        if (split.length == 2) {
-                            try {
-                                popCount = Integer.parseInt(split[1]);
-                            } catch (NumberFormatException e) {
-                                LogManager.getLogger().warn("Invalid /pop command issued. Command %s\nPopping once", s);
-                            }
-                        }
-                        for (;popCount > 0; popCount--)
-                            commandResultStack.pop();
-                    }
-
-                    String parsedCommand = s;
-                    while ((parsedCommand.contains("$(PEEK)") || parsedCommand.contains("$(POP)") || parsedCommand.contains("$(TRIGGER)")) && !commandResultStack.empty()) {
-                        if (parsedCommand.contains("$(PEEK)") && (!parsedCommand.contains("$(POP)") || (parsedCommand.indexOf("$(PEEK)") < parsedCommand.indexOf("$(POP)")))) {
-                            parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(PEEK)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.peek())));
-                        } else if (parsedCommand.contains("$(POP)")) {
-                            parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(POP)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.pop())));
-                        } else if (parsedCommand.contains("$(TRIGGER)")) {
-                            parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(TRIGGER)"), getTriggerStringForEvent(event));
+            lastEvent = event;
+            for (String s : triggerScript.getCommands()) {
+                if (s.startsWith("/pop")) {
+                    String[] split = s.split(Pattern.quote(" "));
+                    int popCount = 1;
+                    if (split.length == 2) {
+                        try {
+                            popCount = Integer.parseInt(split[1]);
+                        } catch (NumberFormatException e) {
+                            LogManager.getLogger().warn("Invalid /pop command issued. Command %s\nPopping once", s);
                         }
                     }
-
-                    this.successCount = icommandmanager.executeCommand(this, parsedCommand);
-                    commandResultStack.push(successCount);
-                    ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
-                    ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
+                    for (; popCount > 0; popCount--)
+                        commandResultStack.pop();
                 }
+
+                String parsedCommand = s;
+                while ((parsedCommand.contains("$(PEEK)") || parsedCommand.contains("$(POP)") || parsedCommand.contains("$(TRIGGER)")) && !commandResultStack.empty()) {
+                    if (parsedCommand.contains("$(PEEK)") && (!parsedCommand.contains("$(POP)") || (parsedCommand.indexOf("$(PEEK)") < parsedCommand.indexOf("$(POP)")))) {
+                        parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(PEEK)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.peek())));
+                    } else if (parsedCommand.contains("$(POP)")) {
+                        parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(POP)"), Matcher.quoteReplacement(String.valueOf(commandResultStack.pop())));
+                    } else if (parsedCommand.contains("$(TRIGGER)")) {
+                        parsedCommand = parsedCommand.replaceFirst(Pattern.quote("$(TRIGGER)"), getTriggerStringForEvent(event));
+                    }
+                }
+
+                this.successCount = icommandmanager.executeCommand(this, parsedCommand);
+                commandResultStack.push(successCount);
+
+                ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
+                ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
             }
         }
     }

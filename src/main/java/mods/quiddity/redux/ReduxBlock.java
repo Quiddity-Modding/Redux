@@ -59,9 +59,10 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
             te = new ReduxCommandBlockTileEntity();
         }
 
-        if (te != null) {
-            te.setupTileEntity(reduxBlock);
-        }
+        // Do initial initialization of the tile entity
+        if (te != null)
+            te.init(pack.getId(), reduxBlock);
+
         return te;
     }
 
@@ -94,9 +95,5 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
     @Override
     protected BlockState createBlockState() {
         return new BlockState(this, SUCCESS_COUNT_META);
-    }
-
-    public Block getReduxBlock() {
-        return reduxBlock;
     }
 }

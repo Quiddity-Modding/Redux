@@ -19,8 +19,8 @@ public class Trigger {
     private String trigger;
     private List<String> commands;
 
-    public Class<? extends Event> getTriggerEvent() {
-        return TriggerEvent.valueOf(trigger).forgeEventClass;
+    public TriggerEvent getTriggerEvent() {
+        return TriggerEvent.valueOf(trigger);
     }
 
     public List<String> getCommands() {
@@ -46,6 +46,10 @@ public class Trigger {
         private Class<? extends Event> forgeEventClass;
         private TriggerEvent(Class<? extends Event> forgeEvent) {
             this.forgeEventClass = forgeEvent;
+        }
+
+        public Class<? extends Event> getForgeEventClass() {
+            return forgeEventClass;
         }
 
         public static TriggerEvent getTriggerEventFromForgeEvent(Class<? extends Event> forgeEvent) {
