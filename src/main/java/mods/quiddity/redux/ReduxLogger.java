@@ -25,7 +25,7 @@ public class ReduxLogger extends AbstractLogger {
     public void loadConfigLevel() {
         if (Redux.instance.getReduxConfiguration() != null) {
             Flags<String, ?> logLevel = Redux.instance.getReduxConfiguration().getFlagForName(LOG_LEVEL_CONFIG_KEY, new Flags<String, Integer>(LOG_LEVEL_CONFIG_KEY, 3));
-            if (logLevel.getValue() instanceof Integer) {
+            if (logLevel != null && logLevel.getValue() instanceof Integer) {
                 maxLogLevel = (Integer) logLevel.getValue();
             } else {
                 maxLogLevel = Level.WARN.intLevel();
