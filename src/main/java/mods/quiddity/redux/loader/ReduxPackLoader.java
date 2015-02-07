@@ -14,7 +14,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.GameData;
 import net.minecraftforge.fml.relauncher.Side;
-import org.apache.logging.log4j.LogManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -68,7 +67,7 @@ public class ReduxPackLoader {
                         TileEntity.addMapping(mcBlock.getTileEntityClass(), b.getId());
                     }
                 } catch (Exception e) {
-                    LogManager.getLogger().fatal("Error accessing FML GameData.\nRedux will not function properly!\nDid FML Update?");
+                    Redux.instance.getLogger().fatal("Error accessing FML GameData.\nRedux will not function properly!\nDid FML Update?", e);
                 }
             }
             /*

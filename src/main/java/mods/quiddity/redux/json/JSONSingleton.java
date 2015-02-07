@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.model.Config;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,26 +34,31 @@ public class JSONSingleton {
                 Redux.copyResource(Redux.GROUP + "/redux/json/model/config.json", configJSON);
             }
         } catch (IOException e) {
-            FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux configuration!", true);
+            Redux.instance.getLogger().fatal("Redux: Error copying default Redux configuration!\nRedux will now cause a crash.", true);
+            throw new AssertionError();
         }
     }
 
-    public Config loadConfig() {
+    public Config loadConfig() throws JSONLoadException{
         return (Config) loadJSON(configJSON, Config.class);
     }
 
-    public Object loadJSON(File file, Class<?> clazz) {
+    public Object loadJSON(File file, Class<?> clazz) throws JSONLoadException {
         try {
             String json = Files.toString(file, charset);
             return gson.fromJson(json, clazz);
-
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new JSONLoadException(e, "Error loading the JSON file: %s", file.getAbsolutePath());
         }
-        return null;
     }
 
     public Object loadJSON(Reader input, Class<?> clazz) {
         return gson.fromJson(input, clazz);
+    }
+
+    public static final class JSONLoadException extends Exception {
+        public JSONLoadException (Throwable cause, String format, String... args) {
+            super(String.format(format, args), cause);
+        }
     }
 }

@@ -5,10 +5,9 @@ import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.JSONSingleton;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.message.FormattedMessage;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -36,9 +35,14 @@ public class Config {
             Pack p = null;
             if (new File(Redux.reduxFolder, pack + File.separator + "config.json").exists()) {
                 file = new File(Redux.reduxFolder, pack + File.separator + "config.json");
-                p = (Pack) JSONSingleton.getInstance().loadJSON(file, Pack.class);
-                if (p == null) {
-                    LogManager.getLogger().warn("Enabled Redux pack config file not found. % s does not exist.", Redux.reduxFolder.getAbsolutePath() + pack + File.separator + "config.json");
+                try {
+                    p = (Pack) JSONSingleton.getInstance().loadJSON(file, Pack.class);
+                    if (p == null) {
+                        Redux.instance.getLogger().warn("Enabled Redux pack config file not found. % s does not exist.", Redux.reduxFolder.getAbsolutePath() + pack + File.separator + "config.json");
+                    }
+                } catch (JSONSingleton.JSONLoadException e) {
+                    Redux.instance.getLogger().warn("Enabled Redux pack inconsistency. %s is inconsistent. Check the configuration.", pack + ".zip");
+                    Redux.instance.getLogger().warn(new FormattedMessage("Redux pack %s will not be loaded.", pack, e));
                 }
             } else if (new File(Redux.reduxFolder, pack + ".zip").exists()) {
                 file = new File(Redux.reduxFolder, pack + ".zip");
@@ -50,8 +54,9 @@ public class Config {
                         p = (Pack) JSONSingleton.getInstance().loadJSON(packZipReader, Pack.class);
                     }
                     packZip.close();
-                } catch (IOException e) {
-                    LogManager.getLogger().warn("Enabled Redux pack inconsistency. %s is inconsistent.", pack + ".zip");
+                } catch (Exception e) {
+                    Redux.instance.getLogger().warn("Enabled Redux pack inconsistency. %s is inconsistent. Check the configuration.", pack + ".zip");
+                    Redux.instance.getLogger().warn(new FormattedMessage("Redux pack %s will not be loaded.", pack, e));
                 }
             }
             if (p != null) {
@@ -85,6 +90,18 @@ public class Config {
 
     public List<Flags<String, ?>> getFeatures() {
         return ImmutableList.copyOf(features);
+    }
+
+    public Flags<String, ?> getFlagForName(String key) {
+        return this.getFlagForName(key, null);
+    }
+
+    public Flags<String, ?> getFlagForName(String key, Flags<String, ?> defaultValue) {
+        for (Flags<String, ?> flag : ImmutableList.copyOf(features)) {
+            if (flag.getKey().equalsIgnoreCase(key))
+                return flag;
+        }
+        return defaultValue;
     }
 
     @Override

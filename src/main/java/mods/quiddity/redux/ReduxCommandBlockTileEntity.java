@@ -23,7 +23,6 @@ import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
-import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -235,7 +234,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                         try {
                             popCount = Integer.parseInt(split[1]);
                         } catch (NumberFormatException e) {
-                            LogManager.getLogger().warn("Invalid /pop command issued. Command %s\nPopping once", s);
+                            Redux.instance.getLogger().warn("Invalid /pop command issued. Command %s\nPopping once", s);
                         }
                     }
                     for (; popCount > 0; popCount--)

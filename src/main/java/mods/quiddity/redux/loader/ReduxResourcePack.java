@@ -1,13 +1,12 @@
 package mods.quiddity.redux.loader;
 
 import com.google.common.collect.Sets;
+import mods.quiddity.redux.Redux;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ModContainer;
-import org.apache.logging.log4j.LogManager;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -38,7 +37,9 @@ public class ReduxResourcePack implements IResourcePack {
 
     @Override
     public InputStream getInputStream(ResourceLocation resource) throws IOException {
-        checkSandbox(resource.getResourcePath());
+        if (!checkSandbox(resource.getResourcePath())){
+            return null;
+        }
         InputStream resourceStream = null;
         if (reduxModPack.getSource().isDirectory()) {
             resourceStream = new FileInputStream(new File(reduxModPack.getSource(), resource.getResourcePath()));
@@ -55,7 +56,9 @@ public class ReduxResourcePack implements IResourcePack {
 
     @Override
     public boolean resourceExists(ResourceLocation resource) {
-        checkSandbox(resource.getResourcePath());
+        if (!checkSandbox(resource.getResourcePath())){
+            return false;
+        }
         boolean resourceExists = false;
         if (reduxModPack.getSource().isDirectory()) {
             resourceExists = new File(reduxModPack.getSource(), resource.getResourcePath()).exists();
@@ -65,7 +68,7 @@ public class ReduxResourcePack implements IResourcePack {
                 reduxPackZip = new ZipFile(reduxModPack.getSource());
                 resourceExists = reduxPackZip.getEntry(resource.getResourcePath()) != null;
             } catch (IOException e) {
-                LogManager.getLogger().warn("Redux pack inconsistency. %s is inconsistent.", resource.getResourceDomain() + ".zip");
+                Redux.instance.getLogger().warn("Redux pack inconsistency. %s is inconsistent.", resource.getResourceDomain() + ".zip");
             } finally {
                 if (reduxPackZip != null) {
                     try {
@@ -97,10 +100,11 @@ public class ReduxResourcePack implements IResourcePack {
         return reduxModPack.getName();
     }
 
-    private void checkSandbox(String resource) {
+    private boolean checkSandbox(String resource) {
         if (resource.contains("..") || resource.startsWith("/") || resource.charAt(1) == ':') {
-            FMLCommonHandler.instance().raiseException(new SecurityException(String.format("Tried to access file(s) outside of the Redux config folder with the path of: %s", resource)),
-                    "Redux: Critical security error!", true);
+            Redux.instance.getLogger().warn("Critical security error! Tried to access file(s) outside of the Redux config folder with the path of: %s\nWill deny requested file.", resource);
+            return false;
         }
+        return true;
     }
 }

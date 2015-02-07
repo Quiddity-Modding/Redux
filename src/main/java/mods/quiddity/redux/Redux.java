@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.channels.Channels;
@@ -33,6 +34,7 @@ public class Redux {
     public static Redux instance = null;
 
     private Config reduxConfiguration = null;
+    private final ReduxLogger logger = new ReduxLogger(MODID);
 
     public Redux() {
         instance = this;
@@ -45,7 +47,12 @@ public class Redux {
             // noinspection ResultOfMethodCallIgnored
             reduxFolder.mkdirs();
         }
-        reduxConfiguration = JSONSingleton.getInstance().loadConfig();
+        try {
+            reduxConfiguration = JSONSingleton.getInstance().loadConfig();
+        } catch (JSONSingleton.JSONLoadException e) {
+            logger.fatal("Error loading configuration!", e);
+        }
+        logger.loadConfigLevel();
     }
 
     @EventHandler
@@ -69,6 +76,10 @@ public class Redux {
         for (ICommand command : ReduxCommands.getCommands()) {
             event.registerServerCommand(command);
         }
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public Config getReduxConfiguration() {
