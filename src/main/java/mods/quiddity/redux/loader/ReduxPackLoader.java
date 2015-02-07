@@ -42,7 +42,9 @@ public class ReduxPackLoader {
             children.add(packContainer);
 
             for (Block b : p.getBlocks()) {
+                ReduxBlock.blockThreadLocal.set(b);
                 ReduxBlock mcBlock = new ReduxBlock(p, b);
+                ReduxBlock.blockThreadLocal.remove();
                 Item blockItem = new ItemBlock(mcBlock);
 
                 if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {

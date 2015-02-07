@@ -108,6 +108,8 @@ public class Block {
     }
 
     public List<Flags<String, Integer>> getCustomProperties() {
+        if (custom_properties == null)
+            return null;
         return ImmutableList.copyOf(custom_properties);
     }
 

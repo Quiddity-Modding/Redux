@@ -31,28 +31,28 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
     private final Pack pack;
     private final Block reduxBlock;
     public static final PropertyInteger SUCCESS_COUNT_META = PropertyInteger.create("lastSuccessCount", 0, 15);
+    public static final ThreadLocal<Block> blockThreadLocal = new ThreadLocal<Block>();
 
     private final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     private Map<String, PropertyInteger> customBlockProperties = new HashMap<String, PropertyInteger>();
 
     public ReduxBlock(Pack parentPack, Block reduxBlock) {
         super(reduxBlock.getMaterial());
+        this.pack = parentPack;
+        this.reduxBlock = reduxBlock;
 
         setUnlocalizedName(reduxBlock.getName());
         setCreativeTab(reduxBlock.getCreativeTab());
-        this.lightOpacity = reduxBlock.isFullCube() ? 255 : 0;
-        this.fullBlock = reduxBlock.isFullCube();
-        this.translucent = reduxBlock.isFullCube();
-        this.pack = parentPack;
-        this.reduxBlock = reduxBlock;
 
         IBlockState defaultBlockState = this.blockState.getBaseState().withProperty(SUCCESS_COUNT_META, 0);
         if (reduxBlock.shouldAddFacingProperty())
             defaultBlockState = defaultBlockState.withProperty(FACING, null);
-        for (Flags<String, Integer> customProperty : reduxBlock.getCustomProperties()) {
-            PropertyInteger customIntegerProperty = PropertyInteger.create(customProperty.getKey(), Integer.MIN_VALUE, Integer.MAX_VALUE);
-            customBlockProperties.put(customProperty.getKey(), customIntegerProperty);
-            defaultBlockState = defaultBlockState.withProperty(customIntegerProperty, customProperty.getValue());
+        if (reduxBlock.getCustomProperties() != null) {
+            for (Flags<String, Integer> customProperty : reduxBlock.getCustomProperties()) {
+                PropertyInteger customIntegerProperty = PropertyInteger.create(customProperty.getKey(), Integer.MIN_VALUE, Integer.MAX_VALUE);
+                customBlockProperties.put(customProperty.getKey(), customIntegerProperty);
+                defaultBlockState = defaultBlockState.withProperty(customIntegerProperty, customProperty.getValue());
+            }
         }
         this.setDefaultState(defaultBlockState);
 
@@ -121,6 +121,13 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     @Override
     protected BlockState createBlockState() {
+        Block reduxBlock;
+        if (this.reduxBlock == null)
+            reduxBlock = blockThreadLocal.get();
+        else
+            reduxBlock = this.reduxBlock;
+        if (reduxBlock == null) throw new AssertionError();
+
         if (reduxBlock.shouldAddFacingProperty())
             return new BlockState(this, SUCCESS_COUNT_META, FACING);
         else
@@ -129,20 +136,37 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     @Override
     public boolean isOpaqueCube() {
-        if (reduxBlock == null)
-            return false;
-        return !reduxBlock.isFullCube();
+        Block reduxBlock;
+        if (this.reduxBlock == null)
+            reduxBlock = blockThreadLocal.get();
+        else
+            reduxBlock = this.reduxBlock;
+        if (reduxBlock == null) throw new AssertionError();
+
+        return reduxBlock.isFullCube();
     }
 
     @Override
     public boolean isFullCube() {
-        if (reduxBlock == null)
-            return false;
-        return !reduxBlock.isFullCube();
+        Block reduxBlock;
+        if (this.reduxBlock == null)
+            reduxBlock = blockThreadLocal.get();
+        else
+            reduxBlock = this.reduxBlock;
+        if (reduxBlock == null) throw new AssertionError();
+
+        return reduxBlock.isFullCube();
     }
 
     @Override
     public int getRenderType() {
+        Block reduxBlock;
+        if (this.reduxBlock == null)
+            reduxBlock = blockThreadLocal.get();
+        else
+            reduxBlock = this.reduxBlock;
+        if (reduxBlock == null) throw new AssertionError();
+
         return reduxBlock.isFullCube() ? super.getRenderType() : 0;
     }
 }
