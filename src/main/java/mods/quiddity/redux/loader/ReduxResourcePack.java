@@ -6,8 +6,8 @@ import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.ModContainer;
+import org.apache.logging.log4j.LogManager;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -65,7 +65,7 @@ public class ReduxResourcePack implements IResourcePack {
                 reduxPackZip = new ZipFile(reduxModPack.getSource());
                 resourceExists = reduxPackZip.getEntry(resource.getResourcePath()) != null;
             } catch (IOException e) {
-                FMLLog.warning("Redux pack inconsistency. %s is inconsistent.", resource.getResourceDomain() + ".zip");
+                LogManager.getLogger().warn("Redux pack inconsistency. %s is inconsistent.", resource.getResourceDomain() + ".zip");
             } finally {
                 if (reduxPackZip != null) {
                     try {

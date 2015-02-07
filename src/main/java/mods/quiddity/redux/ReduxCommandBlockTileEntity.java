@@ -22,11 +22,11 @@ import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.apache.logging.log4j.LogManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,7 +59,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             try {
                 eventReceivers.add(new ReduxBlockEventReceiver(trigger));
             } catch (Exception e) {
-                FMLLog.severe("Error accessing FML EventBus.\nRedux will not function properly!\nDid FML Update?");
+                LogManager.getLogger().fatal("Error accessing FML EventBus.\nRedux will not function properly!\nDid FML Update?");
             }
         }
     }
@@ -215,7 +215,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                             try {
                                 popCount = Integer.parseInt(split[1]);
                             } catch (NumberFormatException e) {
-                                FMLLog.warning("Invalid /pop command issued. Command %s\nPopping once", s);
+                                LogManager.getLogger().warn("Invalid /pop command issued. Command %s\nPopping once", s);
                             }
                         }
                         for (;popCount > 0; popCount--)

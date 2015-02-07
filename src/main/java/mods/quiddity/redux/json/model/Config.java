@@ -3,9 +3,9 @@ package mods.quiddity.redux.json.model;
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.JSONSingleton;
-import net.minecraftforge.fml.common.FMLLog;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class Config {
                 file = new File(Redux.reduxFolder, pack + File.separator + "config.json");
                 p = (Pack) JSONSingleton.getInstance().loadJSON(file, Pack.class);
                 if (p == null) {
-                    FMLLog.warning("Enabled Redux pack config file not found. %s does not exist.", Redux.reduxFolder.getAbsolutePath() + pack + File.separator + "config.json");
+                    LogManager.getLogger().warn("Enabled Redux pack config file not found. % s does not exist.", Redux.reduxFolder.getAbsolutePath() + pack + File.separator + "config.json");
                 }
             } else if (new File(Redux.reduxFolder, pack + ".zip").exists()) {
                 file = new File(Redux.reduxFolder, pack + ".zip");
@@ -49,7 +49,7 @@ public class Config {
                     }
                     packZip.close();
                 } catch (IOException e) {
-                    FMLLog.warning("Enabled Redux pack inconsistency. %s is inconsistent.", pack + ".zip");
+                    LogManager.getLogger().warn("Enabled Redux pack inconsistency. %s is inconsistent.", pack + ".zip");
                 }
             }
             if (p != null) {
