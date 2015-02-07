@@ -18,7 +18,7 @@ buildscript {
 apply plugin: 'forge'
 
 version = "dev-" + System.getenv('BUILD_NUMBER')
-if (System.getenv('RELEASE').equalsIgnoreCase("true")) {
+if (System.getenv('RELEASE') != null && System.getenv('RELEASE').equalsIgnoreCase("true")) {
     version = System.getenv('RELEASE_STRING')
 }
 
