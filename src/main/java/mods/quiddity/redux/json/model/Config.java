@@ -89,6 +89,8 @@ public class Config {
     }
 
     public List<Flags<String, ?>> getFeatures() {
+        if (features == null)
+            return null;
         return ImmutableList.copyOf(features);
     }
 
@@ -97,6 +99,8 @@ public class Config {
     }
 
     public Flags<String, ?> getFlagForName(String key, Flags<String, ?> defaultValue) {
+        if (features == null)
+            return null;
         for (Flags<String, ?> flag : ImmutableList.copyOf(features)) {
             if (flag.getKey().equalsIgnoreCase(key))
                 return flag;
