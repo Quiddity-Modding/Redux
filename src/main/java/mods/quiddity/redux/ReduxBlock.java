@@ -93,7 +93,7 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     @Override
     public boolean isCollidable() {
-        return reduxBlock.getCollisionBoxes() != null && reduxBlock.getCollisionBoxes().isEmpty();
+        return reduxBlock.getCollisionBoxes() == null || !reduxBlock.getCollisionBoxes().isEmpty();
     }
 
     @Override

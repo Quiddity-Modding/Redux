@@ -218,8 +218,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     playerTrigger = chunkWatchEvent.player;
                 } else if (event instanceof BlockEvent) {
                     BlockEvent blockEvent = (BlockEvent) event;
-                    if (triggerScript.blockHasToBeTheCause() && blockEvent.pos != ReduxCommandBlockTileEntity.this.pos
-                            && !(worldObj.getTileEntity(blockEvent.pos) instanceof ReduxCommandBlockTileEntity)) {
+                    if (triggerScript.blockHasToBeTheCause() && blockEvent.pos != ReduxCommandBlockTileEntity.this.pos) {
                         return;
                     }
 
@@ -244,7 +243,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     reduxVariables.put("chunk_x", String.valueOf(explosionEvent.world.getChunkFromBlockCoords(new BlockPos(explosionEvent.explosion.getPosition())).getChunkCoordIntPair().chunkXPos));
                     reduxVariables.put("chunk_z", String.valueOf(explosionEvent.world.getChunkFromBlockCoords(new BlockPos(explosionEvent.explosion.getPosition())).getChunkCoordIntPair().chunkZPos));
                 }
-
                 reduxVariables.put("event_name", triggerScript.getTriggerEvent().name());
             } else if (event == null && lastEventArgs != null && lastEventArgs.length > 0) {
                 if (triggerScript.getTriggerEvent() == Trigger.TriggerEvent.OnEntityCollide) {
