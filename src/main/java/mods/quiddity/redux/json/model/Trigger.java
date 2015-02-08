@@ -43,7 +43,8 @@ public class Trigger {
         ServerChatEvent(net.minecraftforge.event.ServerChatEvent.class),
         OnTick(Event.class),
         OnEntityCollide(Event.class),
-        OnInteract(Event.class);
+        OnInteract(Event.class),
+        OnRestoneStrengthChange(Event.class);
 
         private Class<? extends Event> forgeEventClass;
         private TriggerEvent(Class<? extends Event> forgeEvent) {

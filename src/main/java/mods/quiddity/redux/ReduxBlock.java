@@ -41,6 +41,7 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
     private final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     private Map<String, PropertyInteger> customBlockProperties = new HashMap<String, PropertyInteger>();
+    private int lastRedstoneStrongStrength[] = {0, 0, 0, 0, 0, 0}, lastRedstoneWeakStrength = 0;
 
     public ReduxBlock(Pack parentPack, Block reduxBlock) {
         super(reduxBlock.getMaterial());
@@ -206,6 +207,23 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         if (!worldIn.isRemote && !this.canPlaceBlockAt(worldIn, pos) && reduxBlock.isWeak()) {
             this.dropBlockAsItem(worldIn, pos, state, 0);
             worldIn.setBlockToAir(pos);
+        }
+
+        boolean redstoneChanged = false;
+        for (EnumFacing dir : EnumFacing.values()) {
+            if (lastRedstoneStrongStrength[dir.getIndex()] != worldIn.getRedstonePower(pos, dir)) {
+                lastRedstoneStrongStrength[dir.getIndex()] = worldIn.getRedstonePower(pos, dir);
+                redstoneChanged = true;
+            }
+        }
+        if (lastRedstoneWeakStrength != worldIn.isBlockIndirectlyGettingPowered(pos)) {
+            lastRedstoneWeakStrength = worldIn.isBlockIndirectlyGettingPowered(pos);
+            redstoneChanged = true;
+        }
+
+        if (redstoneChanged && worldIn.getTileEntity(pos) instanceof ReduxCommandBlockTileEntity) {
+            ReduxCommandBlockTileEntity commandBlockTileEntity = (ReduxCommandBlockTileEntity) worldIn.getTileEntity(pos);
+            commandBlockTileEntity.triggerSpecialEvent(Trigger.TriggerEvent.OnRestoneStrengthChange, lastRedstoneStrongStrength, lastRedstoneWeakStrength);
         }
     }
 

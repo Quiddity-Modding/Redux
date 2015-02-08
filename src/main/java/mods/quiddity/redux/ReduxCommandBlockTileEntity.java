@@ -256,6 +256,14 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                         reduxVariables.put("hit_y", String.valueOf(lastEventArgs[4]));
                         reduxVariables.put("hit_z", String.valueOf(lastEventArgs[5]));
                     }
+                } else if (triggerScript.getTriggerEvent() == Trigger.TriggerEvent.OnRestoneStrengthChange) {
+                    for (int i = 0; i < 7; i++) {
+                        if (i == 7) {
+                            reduxVariables.put("weak", String.valueOf(i));
+                        } else {
+                            reduxVariables.put("strong:" + EnumFacing.values()[i].getName2(), String.valueOf(i));
+                        }
+                    }
                 }
             }
             if (playerTrigger != null) {
