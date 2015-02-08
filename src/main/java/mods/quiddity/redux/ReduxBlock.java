@@ -12,6 +12,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
@@ -198,6 +199,18 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         return reduxBlock.isFullCube();
     }
 
+    public void onNeighborBlockChange(World worldIn, BlockPos pos, IBlockState state, net.minecraft.block.Block neighborBlock) {
+        if (!worldIn.isRemote && !this.canPlaceBlockAt(worldIn, pos) && reduxBlock.isWeak()) {
+            this.dropBlockAsItem(worldIn, pos, state, 0);
+            worldIn.setBlockToAir(pos);
+        }
+    }
+
+    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+        return reduxBlock.isWeak() ? (World.doesBlockHaveSolidTopSurface(worldIn, pos.down()) || worldIn.getBlockState(pos.down()).getBlock() == Blocks.glowstone)
+                : super.canPlaceBlockAt(worldIn, pos);
+    }
+
     /**
      * Left click?
      * @param worldIn The world
@@ -212,6 +225,7 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         }
     }
 
+    // Right click?
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumFacing side, float hitX, float hitY, float hitZ) {
         if (worldIn.getTileEntity(pos) instanceof ReduxCommandBlockTileEntity) {

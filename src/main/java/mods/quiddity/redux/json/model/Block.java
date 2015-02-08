@@ -19,7 +19,7 @@ public class Block {
     private String description;
 
     private String material;
-    private boolean full_cube;
+    private boolean full_cube, is_weak;
     private List<CollisionBox> collisionBoxes;
     private boolean directional;
     private List<Flags<String, Integer>> custom_properties;
@@ -89,6 +89,10 @@ public class Block {
 
     public boolean isFullCube() {
         return full_cube;
+    }
+
+    public boolean isWeak() {
+        return is_weak;
     }
 
     public CreativeTabs getCreativeTab() {
