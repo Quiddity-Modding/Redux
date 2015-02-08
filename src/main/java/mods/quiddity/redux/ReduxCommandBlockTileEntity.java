@@ -8,6 +8,7 @@ import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
@@ -209,7 +210,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 return;
             }
 
-            EntityPlayerMP playerTrigger = null;
+            EntityPlayer playerTrigger = null;
             if (event != null) {
                 if (event instanceof ChunkWatchEvent) {
                     ChunkWatchEvent chunkWatchEvent = (ChunkWatchEvent) event;
@@ -218,18 +219,28 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     playerTrigger = chunkWatchEvent.player;
                 } else if (event instanceof BlockEvent) {
                     BlockEvent blockEvent = (BlockEvent) event;
-                    if (triggerScript.blockHasToBeTheCause() && blockEvent.pos != ReduxCommandBlockTileEntity.this.pos) {
+                    if (triggerScript.blockHasToBeTheCause() && !blockEvent.pos.equals(ReduxCommandBlockTileEntity.this.pos)) {
                         return;
                     }
-
                     reduxVariables.put("target_x", String.valueOf(blockEvent.pos.getX()));
                     reduxVariables.put("target_y", String.valueOf(blockEvent.pos.getY()));
                     reduxVariables.put("target_z", String.valueOf(blockEvent.pos.getZ()));
-
                     reduxVariables.put("chunk_x", String.valueOf(blockEvent.world.getChunkFromBlockCoords(blockEvent.pos).getChunkCoordIntPair().chunkXPos));
                     reduxVariables.put("chunk_z", String.valueOf(blockEvent.world.getChunkFromBlockCoords(blockEvent.pos).getChunkCoordIntPair().chunkZPos));
-
                     reduxVariables.put("target_id", ((BlockEvent) event).state.getBlock().getUnlocalizedName());
+
+                    switch(triggerScript.getTriggerEvent()) {
+                        case BlockBreakEvent:
+                            playerTrigger = ((BlockEvent.BreakEvent)event).getPlayer();
+                            break;
+                        case BlockPlaceEvent:
+                        case  BlockMultiPlaceEvent:
+                            playerTrigger = ((BlockEvent.PlaceEvent)event).player;
+                            break;
+                        case BlockHarvestDropsEvent:
+                            playerTrigger = ((BlockEvent.HarvestDropsEvent)event).harvester;
+                            break;
+                    }
                 } else if (event instanceof ServerChatEvent) {
                     ServerChatEvent chatEvent = (ServerChatEvent) event;
                     reduxVariables.put("chat_message", chatEvent.message);
