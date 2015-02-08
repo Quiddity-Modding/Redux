@@ -218,6 +218,11 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     playerTrigger = chunkWatchEvent.player;
                 } else if (event instanceof BlockEvent) {
                     BlockEvent blockEvent = (BlockEvent) event;
+                    if (triggerScript.blockHasToBeTheCause() && blockEvent.pos != ReduxCommandBlockTileEntity.this.pos
+                            && !(worldObj.getTileEntity(blockEvent.pos) instanceof ReduxCommandBlockTileEntity)) {
+                        return;
+                    }
+
                     reduxVariables.put("target_x", String.valueOf(blockEvent.pos.getX()));
                     reduxVariables.put("target_y", String.valueOf(blockEvent.pos.getY()));
                     reduxVariables.put("target_z", String.valueOf(blockEvent.pos.getZ()));

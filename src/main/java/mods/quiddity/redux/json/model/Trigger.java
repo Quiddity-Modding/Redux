@@ -17,6 +17,7 @@ import java.util.List;
 @SuppressWarnings("all")
 public class Trigger {
     private String trigger;
+    private boolean on_cause = true;
     private List<String> commands;
 
     public TriggerEvent getTriggerEvent() {
@@ -25,6 +26,10 @@ public class Trigger {
 
     public List<String> getCommands() {
         return ImmutableList.copyOf(commands);
+    }
+
+    public boolean blockHasToBeTheCause() {
+        return on_cause;
     }
 
     public enum TriggerEvent {
