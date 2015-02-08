@@ -250,7 +250,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             } else if (event == null && lastEventArgs != null && lastEventArgs.length > 0) {
                 if (triggerScript.getTriggerEvent() == Trigger.TriggerEvent.OnEntityCollide) {
                     Entity entity = (Entity) lastEventArgs[0];
-                    reduxVariables.put("entity_type", entity.getName());
+                    reduxVariables.put("entity_name", entity.getName());
                 }
             }
             reduxVariables.put("world_id", String.valueOf(ReduxCommandBlockTileEntity.this.worldObj.provider.getDimensionId()));
