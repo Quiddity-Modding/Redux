@@ -3,6 +3,7 @@ package mods.quiddity.redux;
 import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Flags;
 import mods.quiddity.redux.json.model.Pack;
+import mods.quiddity.redux.json.model.Trigger;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.properties.PropertyInteger;
@@ -86,6 +87,14 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
     @Override
     public boolean hasTileEntity(IBlockState state) {
         return reduxBlock.tickable() || !reduxBlock.getScript().isEmpty();
+    }
+
+    @Override
+    public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, Entity entityIn) {
+        if (worldIn.getTileEntity(pos) instanceof ReduxCommandBlockTileEntity) {
+            ReduxCommandBlockTileEntity commandBlockTileEntity = (ReduxCommandBlockTileEntity) worldIn.getTileEntity(pos);
+            commandBlockTileEntity.triggerSpecialEvent(Trigger.TriggerEvent.OnEntityCollide, entityIn);
+        }
     }
 
     @Override

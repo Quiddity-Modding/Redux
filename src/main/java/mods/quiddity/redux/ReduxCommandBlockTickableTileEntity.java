@@ -1,5 +1,6 @@
 package mods.quiddity.redux;
 
+import mods.quiddity.redux.json.model.Trigger;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -22,15 +23,13 @@ public class ReduxCommandBlockTickableTileEntity extends ReduxCommandBlockTileEn
             return;
         ticks++;
         if (ticks >= reduxBlock.getTickRate()) {
-            for (final ReduxBlockEventReceiver receiver : tickEventReceivers) {
-                FMLCommonHandler.callFuture(new FutureTask<Void>(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        receiver.receiveEvent(null);
-                        return null;
-                    }
-                }));
-            }
+            FMLCommonHandler.callFuture(new FutureTask<Void>(new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    triggerSpecialEvent(Trigger.TriggerEvent.OnTick);
+                    return null;
+                }
+            }));
             ticks = 0;
         }
     }

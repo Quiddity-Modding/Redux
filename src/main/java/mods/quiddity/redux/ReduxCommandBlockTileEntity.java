@@ -38,14 +38,15 @@ import java.util.regex.Pattern;
 public class ReduxCommandBlockTileEntity extends TileEntity {
 
     private String packId = "";
+    private Object[] lastEventArgs;
 
     protected volatile Block reduxBlock = null;
     protected int lastSuccessCount = 0;
     protected CommandResultStats.Type lastResultType = CommandResultStats.Type.SUCCESS_COUNT;
     protected int lastResultAmount = 0;
 
-    protected final Set<ReduxBlockEventReceiver> tickEventReceivers = new HashSet<ReduxBlockEventReceiver>();
     protected final Set<ReduxBlockEventReceiver> eventReceivers = new HashSet<ReduxBlockEventReceiver>();
+    protected final Map<Trigger.TriggerEvent, Set<ReduxBlockEventReceiver>> specialReceivers = new HashMap<Trigger.TriggerEvent, Set<ReduxBlockEventReceiver>>();
     protected final Map<String, String> reduxVariables = new HashMap<String, String>();
 
     public ReduxCommandBlockTileEntity() {}
@@ -53,20 +54,17 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
     public int getLastSuccessCount() {
         return lastSuccessCount;
     }
-    public void addTickEventReceiver(ReduxBlockEventReceiver receiver) {
-        tickEventReceivers.add(receiver);
+
+    public void addSpecialEventReceiver(Trigger.TriggerEvent event, ReduxBlockEventReceiver receiver) {
+        if (!specialReceivers.containsKey(event))
+            specialReceivers.put(event, new HashSet<ReduxBlockEventReceiver>());
+        specialReceivers.get(event).add(receiver);
     }
 
     public void init(String packId, Block reduxBlock) {
         this.packId = packId;
         this.reduxBlock = reduxBlock;
-
-        for (Trigger trigger : reduxBlock.getScript()) {
-            // We have to keep a local strong reference. Otherwise GC would remove our event receiver right away.
-            ReduxBlockEventReceiver receiver = new ReduxBlockEventReceiver(trigger);
-            eventReceivers.add(receiver);
-            ReduxEventDispatcher.getInstance().registerEventReceiver(receiver);
-        }
+        setupTriggers();
     }
 
     public void setupTileEntity(String blockId) {
@@ -78,14 +76,30 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         }
         if (reduxBlock == null) throw new AssertionError();
 
-        tickEventReceivers.clear();
+        specialReceivers.clear();
         eventReceivers.clear();
+        setupTriggers();
+    }
 
+    private void setupTriggers() {
         for (Trigger trigger : reduxBlock.getScript()) {
             // We have to keep a local strong reference. Otherwise GC would remove our event receiver right away.
             ReduxBlockEventReceiver receiver = new ReduxBlockEventReceiver(trigger);
-            eventReceivers.add(receiver);
-            ReduxEventDispatcher.getInstance().registerEventReceiver(receiver);
+            if (trigger.getTriggerEvent().getForgeEventClass() != Event.class) {
+                eventReceivers.add(receiver);
+                ReduxEventDispatcher.getInstance().registerEventReceiver(receiver);
+            } else {
+                addSpecialEventReceiver(trigger.getTriggerEvent(), receiver);
+            }
+        }
+    }
+
+    public void triggerSpecialEvent(Trigger.TriggerEvent event, Object... args) {
+        if (specialReceivers.containsKey(event)) {
+            lastEventArgs = args;
+            for (ReduxBlockEventReceiver eventReceiver : specialReceivers.get(event)) {
+                eventReceiver.receiveEvent(null);
+            }
         }
     }
 
@@ -120,10 +134,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
         public ReduxBlockEventReceiver(Trigger triggerScript) {
             this.triggerScript = triggerScript;
-
-            if (ReduxCommandBlockTileEntity.this instanceof ReduxCommandBlockTickableTileEntity && triggerScript.getTriggerEvent().getForgeEventClass() == Event.class) {
-                ReduxCommandBlockTileEntity.this.addTickEventReceiver(this);
-            }
         }
 
         public Trigger getTriggerScript() {
@@ -186,6 +196,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         public void receiveEvent(Event event) {
             if (worldObj.isRemote)
                 return;
+
             BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
             IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
             // Check if the block has changed as result of an event. I.E. BlockBreak
@@ -193,7 +204,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 return;
             }
 
-            if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()) != null) {
+            if (event != null && Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()) != null) {
                 EntityPlayerMP player = null;
 
                 if (event instanceof ChunkWatchEvent) {
@@ -227,13 +238,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
                 reduxVariables.put("event_name", Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()).name());
 
-                reduxVariables.put("world_id", String.valueOf(ReduxCommandBlockTileEntity.this.worldObj.provider.getDimensionId()));
-                reduxVariables.put("world_name", ReduxCommandBlockTileEntity.this.worldObj.getWorldInfo().getWorldName());
-
-                reduxVariables.put("x", String.valueOf(blockPos.getX()));
-                reduxVariables.put("y", String.valueOf(blockPos.getY()));
-                reduxVariables.put("z", String.valueOf(blockPos.getZ()));
-
                 if (player != null) {
                     reduxVariables.put("player", player.getName());
                     reduxVariables.put("player_x", String.valueOf(player.getPosition().getX()));
@@ -243,11 +247,20 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     if (player.inventory.getCurrentItem() != null)
                         reduxVariables.put("active_item", player.inventory.getCurrentItem().getDisplayName());
                 }
+            } else if (event == null && lastEventArgs != null && lastEventArgs.length > 0) {
+                if (triggerScript.getTriggerEvent() == Trigger.TriggerEvent.OnEntityCollide) {
+                    Entity entity = (Entity) lastEventArgs[0];
+                    reduxVariables.put("entity_type", entity.getName());
+                }
             }
+            reduxVariables.put("world_id", String.valueOf(ReduxCommandBlockTileEntity.this.worldObj.provider.getDimensionId()));
+            reduxVariables.put("world_name", ReduxCommandBlockTileEntity.this.worldObj.getWorldInfo().getWorldName());
+            reduxVariables.put("x", String.valueOf(blockPos.getX()));
+            reduxVariables.put("y", String.valueOf(blockPos.getY()));
+            reduxVariables.put("z", String.valueOf(blockPos.getZ()));
 
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
             Stack<Integer> commandResultStack = new Stack<Integer>();
-
             lastEvent = event;
             int skipCount = 0;
             for (String s : triggerScript.getCommands()) {
@@ -268,7 +281,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     String[] split = parsedCommand.split(" ");
                     if (split.length == 2) {
                         boolean stopEvent = Boolean.valueOf(split[1]);
-                        if (event.isCancelable()) {
+                        if (event != null && event.isCancelable()) {
                             event.setCanceled(stopEvent);
                             break;
                         }
