@@ -9,7 +9,9 @@ import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.statemap.StateMap;
+import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
@@ -18,6 +20,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +29,6 @@ import java.util.Map;
  * @author winsock on 2/3/15.
  */
 public class ReduxBlock extends net.minecraft.block.Block implements ITileEntityProvider {
-
 
     private final Pack pack;
     private final Block reduxBlock;
@@ -60,6 +62,25 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
             StateMap.Builder stateMapBuilder = (new StateMap.Builder()).addPropertiesToIgnore(SUCCESS_COUNT_META);
             FMLClientHandler.instance().getClient().getBlockRendererDispatcher().getBlockModelShapes().registerBlockWithStateMapper(this, stateMapBuilder.build());
         }
+    }
+
+    @Override
+    public void addCollisionBoxesToList(World worldIn, BlockPos pos, IBlockState state, AxisAlignedBB mask, List list, Entity collidingEntity) {
+        if (!reduxBlock.hasMultipleCollisionBoxes()) {
+            super.addCollisionBoxesToList(worldIn, pos, state, mask, list, collidingEntity);
+        } else {
+            for (Block.CollisionBox collisionBox : reduxBlock.getCollisionBoxes()) {
+                this.setBlockBounds(collisionBox.getMinX(), collisionBox.getMinY(), collisionBox.getMinZ(),
+                        collisionBox.getMaxX(), collisionBox.getMaxY(), collisionBox.getMaxZ());
+                super.addCollisionBoxesToList(worldIn, pos, state, mask, list, collidingEntity);
+            }
+            this.setBlockBoundsForItemRender();
+        }
+    }
+
+    @Override
+    public boolean isCollidable() {
+        return reduxBlock.getCollisionBoxes() != null && reduxBlock.getCollisionBoxes().isEmpty();
     }
 
     @Override
@@ -157,5 +178,14 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         if (reduxBlock == null) throw new AssertionError();
 
         return reduxBlock.isFullCube();
+    }
+
+    /**
+     * Always render the item with full bounds.
+     * Andrew Querol: I cannot think of a need for anything else.
+     */
+    @Override
+    public void setBlockBoundsForItemRender() {
+        this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 }

@@ -242,7 +242,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     reduxVariables.put("active_slot", String.valueOf(player.inventory.currentItem));
                     if (player.inventory.getCurrentItem() != null)
                         reduxVariables.put("active_item", player.inventory.getCurrentItem().getDisplayName());
-
                 }
             }
 

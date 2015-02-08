@@ -20,6 +20,7 @@ public class Block {
 
     private String material;
     private boolean full_cube;
+    private List<CollisionBox> collisionBoxes;
     private boolean directional;
     private List<Flags<String, Integer>> custom_properties;
     private String creative_tab;
@@ -75,6 +76,16 @@ public class Block {
         return directional;
     }
 
+    public List<CollisionBox> getCollisionBoxes() {
+        if (collisionBoxes != null)
+            return ImmutableList.copyOf(collisionBoxes);
+        return null;
+    }
+
+    public boolean hasMultipleCollisionBoxes() {
+        return collisionBoxes != null && collisionBoxes.size() > 1;
+    }
+
     public boolean isFullCube() {
         return full_cube;
     }
@@ -116,5 +127,34 @@ public class Block {
     @Override
     public String toString() {
         return id + " - " + description;
+    }
+
+    public class CollisionBox {
+        private float minX, minY, minZ;
+        private float maxX, maxY, maxZ;
+
+        public float getMinX() {
+            return minX;
+        }
+
+        public float getMinY() {
+            return minY;
+        }
+
+        public float getMinZ() {
+            return minZ;
+        }
+
+        public float getMaxX() {
+            return maxX;
+        }
+
+        public float getMaxY() {
+            return maxY;
+        }
+
+        public float getMaxZ() {
+            return maxZ;
+        }
     }
 }
