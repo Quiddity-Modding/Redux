@@ -24,6 +24,7 @@ public class Block {
     private boolean directional;
     private List<Flags<String, Integer>> custom_properties;
     private List<String> ignored_properties;
+    private String redstone_output_property;
     private String creative_tab;
     private String creative_tab_icon;
     private int tick_rate;
@@ -133,6 +134,10 @@ public class Block {
         if (ignored_properties == null)
             return null;
         return ImmutableList.copyOf(ignored_properties);
+    }
+
+    public String getRedstoneOutputProperty() {
+        return redstone_output_property;
     }
 
     @Override

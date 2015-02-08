@@ -17,6 +17,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -145,6 +146,7 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         return customBlockProperties.get(name);
     }
 
+    @Override
     public int getMetaFromState(IBlockState state) {
         if (hasTileEntity(state) && !state.getPropertyNames().isEmpty()) {
             return (Integer)state.getValue(SUCCESS_COUNT_META);
@@ -199,6 +201,7 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         return reduxBlock.isFullCube();
     }
 
+    @Override
     public void onNeighborBlockChange(World worldIn, BlockPos pos, IBlockState state, net.minecraft.block.Block neighborBlock) {
         if (!worldIn.isRemote && !this.canPlaceBlockAt(worldIn, pos) && reduxBlock.isWeak()) {
             this.dropBlockAsItem(worldIn, pos, state, 0);
@@ -206,6 +209,7 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         }
     }
 
+    @Override
     public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
         return reduxBlock.isWeak() ? (World.doesBlockHaveSolidTopSurface(worldIn, pos.down()) || worldIn.getBlockState(pos.down()).getBlock() == Blocks.glowstone)
                 : super.canPlaceBlockAt(worldIn, pos);
@@ -233,6 +237,29 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
             return commandBlockTileEntity.triggerSpecialEvent(Trigger.TriggerEvent.OnEntityCollide, true, playerIn, side, hitX, hitY, hitZ);
         }
         return false;
+    }
+
+    @Override
+    public boolean canProvidePower() {
+        return reduxBlock.getRedstoneOutputProperty() != null && !reduxBlock.getRedstoneOutputProperty().isEmpty();
+    }
+
+    @Override
+    public int isProvidingWeakPower(IBlockAccess worldIn, BlockPos pos, IBlockState state, EnumFacing side) {
+        if (customBlockProperties.get(reduxBlock.getRedstoneOutputProperty()) != null) {
+            PropertyInteger redstoneProperty = customBlockProperties.get(reduxBlock.getRedstoneOutputProperty());
+            return ((Integer)state.getValue(redstoneProperty)) > 15 ? 15 : ((Integer)state.getValue(redstoneProperty));
+        }
+        return 0;
+    }
+
+    @Override
+    public int isProvidingStrongPower(IBlockAccess worldIn, BlockPos pos, IBlockState state, EnumFacing side) {
+        if (customBlockProperties.get(reduxBlock.getRedstoneOutputProperty()) != null) {
+            PropertyInteger redstoneProperty = customBlockProperties.get(reduxBlock.getRedstoneOutputProperty());
+            return ((Integer)state.getValue(redstoneProperty)) > 15 ? 15 : ((Integer)state.getValue(redstoneProperty));
+        }
+        return 0;
     }
 
     /**
