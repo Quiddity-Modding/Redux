@@ -5,10 +5,11 @@ import mods.quiddity.redux.json.model.Trigger;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.*;
-import scala.Int;
+import net.minecraft.util.ChatComponentText;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Class that handles all of the extra commands that we add for use with the command scripting
@@ -110,38 +111,58 @@ public class ReduxCommands {
         public void run(ICommandSender sender, String... args) throws CommandException {
             if (args.length < 3)
                 throw new CommandException("Incorrect parameters");
+            int result = 0;
             try {
                 if (args[1].equalsIgnoreCase("&&")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Boolean.valueOf(args[0]) && Boolean.valueOf(args[2])) ? 1 : 0);
+                    result = (Boolean.valueOf(args[0]) && Boolean.valueOf(args[2])) ? 1 : 0;
                 } else if (args[1].equalsIgnoreCase("||")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Boolean.valueOf(args[0]) || Boolean.valueOf(args[2])) ? 1 : 0);
+                    result = (Boolean.valueOf(args[0]) || Boolean.valueOf(args[2])) ? 1 : 0;
                 } else if (args[1].equalsIgnoreCase("==")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0);
+                    result = (Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0;
                 } else if (args[1].equalsIgnoreCase("!=")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (!Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0);
-                } else if (args[1].equalsIgnoreCase(">")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) > 0) ? 1 : 0);
+                    result = (!Integer.valueOf(args[0]).equals(Integer.valueOf(args[2]))) ? 1 : 0;
                 } else if (args[1].equalsIgnoreCase("<")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) < 0) ? 1 : 0);
-                } else if (args[1].equalsIgnoreCase(">=")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) >= 0) ? 1 : 0);
-                } else if (args[1].equalsIgnoreCase("=<")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) <= 0) ? 1 : 0);
+                    result = (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) > 0) ? 1 : 0;
+                } else if (args[1].equalsIgnoreCase(">")) {
+                    result = (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) < 0) ? 1 : 0;
+                } else if (args[1].equalsIgnoreCase("<=")) {
+                    result = (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) >= 0) ? 1 : 0;
+                } else if (args[1].equalsIgnoreCase("=>")) {
+                    result = (Integer.valueOf(args[0]).compareTo(Integer.valueOf(args[2])) <= 0) ? 1 : 0;
                 } else if (args[1].equalsIgnoreCase("&")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) & Integer.valueOf(args[2]));
+                    result = Integer.valueOf(args[0]) & Integer.valueOf(args[2]);
                 } else if (args[1].equalsIgnoreCase("|")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) | Integer.valueOf(args[2]));
+                    result = Integer.valueOf(args[0]) | Integer.valueOf(args[2]);
                 } if (args[1].equalsIgnoreCase("^")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, Integer.valueOf(args[0]) ^ Integer.valueOf(args[2]));
+                    result = Integer.valueOf(args[0]) ^ Integer.valueOf(args[2]);
                 }
             } catch (NumberFormatException e) {
                 if (args[1].equalsIgnoreCase("==")) {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, args[0].equalsIgnoreCase(args[2]) ? 1 : 0);
+                    result = args[0].equalsIgnoreCase(args[2]) ? 1 : 0;
                 } else {
-                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, !args[0].equalsIgnoreCase(args[2]) ? 1 : 0);
+                    result = !(args[0].equalsIgnoreCase(args[2])) ? 1 : 0;
                 }
             }
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, result);
+            sender.addChatMessage(new ChatComponentText(String.valueOf(result)));
+        }
+    });
+
+    public static final ReduxCommand RANDOM = new ReduxCommand("random", "/random <lower> <upper>", new ReduxCommandRunnable() {
+        private final Random random = new Random();
+        @Override
+        public void run(ICommandSender sender, String... args) throws CommandException {
+            if (args.length < 2)
+                throw new CommandException("Incorrect parameters");
+            try {
+                int lower = Integer.parseInt(args[0]);
+                int upper = Integer.parseInt(args[1]);
+                int rand = lower + random.nextInt(upper - lower + 1);
+                sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, rand);
+                sender.addChatMessage(new ChatComponentText(String.valueOf(rand)));
+            } catch (NumberFormatException e) {
+                throw new CommandException("First and Second parameters must be integers!");
+            }
         }
     });
 
@@ -151,6 +172,8 @@ public class ReduxCommands {
         commands.add(TEST_FOR_TRIGGER);
         commands.add(TEST_FOR_PROPERTY);
         commands.add(SET_PROPERTY);
+        commands.add(TEST);
+        commands.add(RANDOM);
     }
 
     public static List<ICommand> getCommands() {
