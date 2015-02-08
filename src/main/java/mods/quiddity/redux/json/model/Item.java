@@ -6,6 +6,4 @@ package mods.quiddity.redux.json.model;
  * @author winsock on 1/23/15.
  */
 @SuppressWarnings("all")
-public class Item {
-
-}
+public class Item { }

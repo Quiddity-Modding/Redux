@@ -65,14 +65,10 @@ public class ReduxPackModContainer implements ModContainer {
     }
 
     @Override
-    public void bindMetadata(MetadataCollection mc) {
-
-    }
+    public void bindMetadata(MetadataCollection mc) { }
 
     @Override
-    public void setEnabledState(boolean enabled) {
-
-    }
+    public void setEnabledState(boolean enabled) { }
 
     @Override
     public Set<ArtifactVersion> getRequirements() {

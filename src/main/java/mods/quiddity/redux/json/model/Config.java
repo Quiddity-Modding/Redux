@@ -7,6 +7,8 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.message.FormattedMessage;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -18,7 +20,9 @@ import java.util.*;
  */
 @SuppressWarnings("all")
 public class Config {
+    @Nullable
     private List<Flags<String, ?>> features;
+    @Nonnull
     private List<String> packs;
 
     private transient List<String> humanPackNames;

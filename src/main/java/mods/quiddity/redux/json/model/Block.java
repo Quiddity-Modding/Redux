@@ -3,8 +3,12 @@ package mods.quiddity.redux.json.model;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -14,22 +18,36 @@ import java.util.List;
  */
 @SuppressWarnings("all")
 public class Block {
+    @Nonnull
     private String id;
+    @Nonnull
     private String name;
+    @Nonnull
     private String description;
-
+    @Nonnull
     private String material;
-    private boolean full_cube, is_weak;
-    private List<CollisionBox> collisionBoxes;
-    private boolean directional;
-    private List<Flags<String, Integer>> custom_properties;
-    private List<String> ignored_properties;
-    private String redstone_output_property;
-    private String creative_tab;
-    private String creative_tab_icon;
-    private int tick_rate;
-    private List<String> ore_dictionary;
 
+    @Nullable
+    private boolean full_cube, is_weak;
+    @Nullable
+    private List<CollisionBox> collisionBoxes;
+    @Nullable
+    private boolean directional;
+    @Nullable
+    private List<Flags<String, Integer>> custom_properties;
+    @Nullable
+    private List<String> ignored_properties;
+    @Nullable
+    private String redstone_output_property;
+    @Nullable
+    private String creative_tab;
+    @Nullable
+    private String creative_tab_icon;
+    @Nullable
+    private int tick_rate;
+    @Nullable
+    private List<String> ore_dictionary;
+    @Nullable
     private List<Trigger> script;
 
     private transient CreativeTabs creativeTabObject = null;
@@ -38,24 +56,12 @@ public class Block {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+        return description == null ? "" : description;
     }
 
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public int getTickRate() {
@@ -97,17 +103,19 @@ public class Block {
     }
 
     public CreativeTabs getCreativeTab() {
-        if (creativeTabObject == null) {
+        if (creative_tab == null || creative_tab.isEmpty()) {
+            return creativeTabObject = CreativeTabs.tabAllSearch;
+        } else if (creativeTabObject == null) {
             for (CreativeTabs tab : CreativeTabs.creativeTabArray) {
                 if (tab.getTabLabel().equalsIgnoreCase(creative_tab))
                     creativeTabObject = tab;
             }
-
             if (creativeTabObject == null) {
                 creativeTabObject = new CreativeTabs(creative_tab) {
                     @Override
                     public Item getTabIconItem() {
-                        return Item.getByNameOrId(creative_tab_icon);
+                        return (creative_tab_icon == null || creative_tab_icon.isEmpty() || Item.getByNameOrId(creative_tab_icon) == null)
+                                ? ItemBlock.getItemFromBlock(Blocks.air) : Item.getByNameOrId(creative_tab_icon);
                     }
                 };
             }
@@ -137,7 +145,7 @@ public class Block {
     }
 
     public String getRedstoneOutputProperty() {
-        return redstone_output_property;
+        return redstone_output_property == null ? "" : redstone_output_property;
     }
 
     @Override

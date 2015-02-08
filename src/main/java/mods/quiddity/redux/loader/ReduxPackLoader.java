@@ -36,10 +36,17 @@ public class ReduxPackLoader {
     @SuppressWarnings("unchecked")
     public void loadPacks() {
         List<ModContainer> children = new ArrayList<ModContainer>();
+        if (configuration.getPacks() == null) {
+            Redux.instance.getLogger().info("No packs installed. Without packs this mod does nothing.");
+            return;
+        }
+
         for (Pack p : configuration.getPacks()) {
             ModContainer packContainer = new ReduxPackModContainer(p, Redux.instance);
             FMLCommonHandler.instance().addModToResourcePack(packContainer);
             children.add(packContainer);
+            if (p.getBlocks() == null)
+                continue;;
 
             for (Block b : p.getBlocks()) {
                 ReduxBlock.blockThreadLocal.set(b);

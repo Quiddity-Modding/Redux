@@ -1,5 +1,7 @@
 package mods.quiddity.redux.json.model;
 
+import javax.annotation.Nonnull;
+
 /**
  * JSON Object model to represent Redux configuration features that are key value based
  *
@@ -7,7 +9,9 @@ package mods.quiddity.redux.json.model;
  */
 @SuppressWarnings("all")
 public class Flags<KT, VT> {
+    @Nonnull
     private KT key;
+    @Nonnull
     private VT value;
 
     public Flags() { }
