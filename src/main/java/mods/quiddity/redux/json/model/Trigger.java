@@ -42,7 +42,8 @@ public class Trigger {
         ChunkUnWatch(ChunkWatchEvent.UnWatch.class),
         ServerChatEvent(net.minecraftforge.event.ServerChatEvent.class),
         OnTick(Event.class),
-        OnEntityCollide(Event.class);
+        OnEntityCollide(Event.class),
+        OnInteract(Event.class);
 
         private Class<? extends Event> forgeEventClass;
         private TriggerEvent(Class<? extends Event> forgeEvent) {

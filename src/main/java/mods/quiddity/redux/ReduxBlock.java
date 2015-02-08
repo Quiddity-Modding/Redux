@@ -11,6 +11,7 @@ import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
@@ -61,6 +62,14 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
 
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             StateMap.Builder stateMapBuilder = (new StateMap.Builder()).addPropertiesToIgnore(SUCCESS_COUNT_META);
+            if (reduxBlock.getIgnoredProperties() != null) {
+                for (String s : reduxBlock.getIgnoredProperties()) {
+                    PropertyInteger propertyInteger = customBlockProperties.get(s);
+                    if (propertyInteger != null) {
+                        stateMapBuilder.addPropertiesToIgnore(propertyInteger);
+                    }
+                }
+            }
             FMLClientHandler.instance().getClient().getBlockRendererDispatcher().getBlockModelShapes().registerBlockWithStateMapper(this, stateMapBuilder.build());
         }
     }
@@ -187,6 +196,29 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
         if (reduxBlock == null) throw new AssertionError();
 
         return reduxBlock.isFullCube();
+    }
+
+    /**
+     * Left click?
+     * @param worldIn The world
+     * @param pos The position of the block
+     * @param playerIn The player whom clicked
+     */
+    @Override
+    public void onBlockClicked(World worldIn, BlockPos pos, EntityPlayer playerIn) {
+        if (worldIn.getTileEntity(pos) instanceof ReduxCommandBlockTileEntity) {
+            ReduxCommandBlockTileEntity commandBlockTileEntity = (ReduxCommandBlockTileEntity) worldIn.getTileEntity(pos);
+            commandBlockTileEntity.triggerSpecialEvent(Trigger.TriggerEvent.OnEntityCollide, false, playerIn);
+        }
+    }
+
+    @Override
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumFacing side, float hitX, float hitY, float hitZ) {
+        if (worldIn.getTileEntity(pos) instanceof ReduxCommandBlockTileEntity) {
+            ReduxCommandBlockTileEntity commandBlockTileEntity = (ReduxCommandBlockTileEntity) worldIn.getTileEntity(pos);
+            return commandBlockTileEntity.triggerSpecialEvent(Trigger.TriggerEvent.OnEntityCollide, true, playerIn, side, hitX, hitY, hitZ);
+        }
+        return false;
     }
 
     /**

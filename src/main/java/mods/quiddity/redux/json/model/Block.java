@@ -23,6 +23,7 @@ public class Block {
     private List<CollisionBox> collisionBoxes;
     private boolean directional;
     private List<Flags<String, Integer>> custom_properties;
+    private List<String> ignored_properties;
     private String creative_tab;
     private String creative_tab_icon;
     private int tick_rate;
@@ -122,6 +123,12 @@ public class Block {
         if (custom_properties == null)
             return null;
         return ImmutableList.copyOf(custom_properties);
+    }
+
+    public List<String> getIgnoredProperties() {
+        if (ignored_properties == null)
+            return null;
+        return ImmutableList.copyOf(ignored_properties);
     }
 
     @Override

@@ -13,10 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -94,13 +91,21 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         }
     }
 
-    public void triggerSpecialEvent(Trigger.TriggerEvent event, Object... args) {
+    /**
+     * Call listening special events.
+     * @param event The event that was triggered
+     * @param args Any extra data to pass on about the event
+     * @return Were any receiversCalled
+     */
+    public boolean triggerSpecialEvent(Trigger.TriggerEvent event, Object... args) {
         if (specialReceivers.containsKey(event)) {
             lastEventArgs = args;
             for (ReduxBlockEventReceiver eventReceiver : specialReceivers.get(event)) {
                 eventReceiver.receiveEvent(null);
             }
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -204,14 +209,13 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 return;
             }
 
-            if (event != null && Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()) != null) {
-                EntityPlayerMP player = null;
-
+            EntityPlayerMP playerTrigger = null;
+            if (event != null) {
                 if (event instanceof ChunkWatchEvent) {
                     ChunkWatchEvent chunkWatchEvent = (ChunkWatchEvent) event;
                     reduxVariables.put("chunk_x", String.valueOf(chunkWatchEvent.chunk.chunkXPos));
                     reduxVariables.put("chunk_z", String.valueOf(chunkWatchEvent.chunk.chunkZPos));
-                    player = chunkWatchEvent.player;
+                    playerTrigger = chunkWatchEvent.player;
                 } else if (event instanceof BlockEvent) {
                     BlockEvent blockEvent = (BlockEvent) event;
                     reduxVariables.put("target_x", String.valueOf(blockEvent.pos.getX()));
@@ -225,7 +229,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 } else if (event instanceof ServerChatEvent) {
                     ServerChatEvent chatEvent = (ServerChatEvent) event;
                     reduxVariables.put("chat_message", chatEvent.message);
-                    player = chatEvent.player;
+                    playerTrigger = chatEvent.player;
                 }  else if (event instanceof ExplosionEvent) {
                     ExplosionEvent explosionEvent = (ExplosionEvent) event;
                     reduxVariables.put("target_x", String.valueOf((int)explosionEvent.explosion.getPosition().xCoord));
@@ -236,22 +240,32 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     reduxVariables.put("chunk_z", String.valueOf(explosionEvent.world.getChunkFromBlockCoords(new BlockPos(explosionEvent.explosion.getPosition())).getChunkCoordIntPair().chunkZPos));
                 }
 
-                reduxVariables.put("event_name", Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()).name());
-
-                if (player != null) {
-                    reduxVariables.put("player", player.getName());
-                    reduxVariables.put("player_x", String.valueOf(player.getPosition().getX()));
-                    reduxVariables.put("player_y", String.valueOf(player.getPosition().getY()));
-                    reduxVariables.put("player_z", String.valueOf(player.getPosition().getZ()));
-                    reduxVariables.put("active_slot", String.valueOf(player.inventory.currentItem));
-                    if (player.inventory.getCurrentItem() != null)
-                        reduxVariables.put("active_item", player.inventory.getCurrentItem().getDisplayName());
-                }
+                reduxVariables.put("event_name", triggerScript.getTriggerEvent().name());
             } else if (event == null && lastEventArgs != null && lastEventArgs.length > 0) {
                 if (triggerScript.getTriggerEvent() == Trigger.TriggerEvent.OnEntityCollide) {
                     Entity entity = (Entity) lastEventArgs[0];
                     reduxVariables.put("entity_name", entity.getName());
+                } else if (triggerScript.getTriggerEvent() == Trigger.TriggerEvent.OnInteract) {
+                    boolean rightClicked = (Boolean)lastEventArgs[0];
+                    playerTrigger = (EntityPlayerMP) lastEventArgs[1];
+                    reduxVariables.put("mouse_button", rightClicked ? "right" : "left");
+                    if (rightClicked) {
+                        EnumFacing sideClicked = (EnumFacing) lastEventArgs[2];
+                        reduxVariables.put("side_clicked", sideClicked.getName2());
+                        reduxVariables.put("hit_x", String.valueOf(lastEventArgs[3]));
+                        reduxVariables.put("hit_y", String.valueOf(lastEventArgs[4]));
+                        reduxVariables.put("hit_z", String.valueOf(lastEventArgs[5]));
+                    }
                 }
+            }
+            if (playerTrigger != null) {
+                reduxVariables.put("player", playerTrigger.getName());
+                reduxVariables.put("player_x", String.valueOf(playerTrigger.getPosition().getX()));
+                reduxVariables.put("player_y", String.valueOf(playerTrigger.getPosition().getY()));
+                reduxVariables.put("player_z", String.valueOf(playerTrigger.getPosition().getZ()));
+                reduxVariables.put("active_slot", String.valueOf(playerTrigger.inventory.currentItem));
+                if (playerTrigger.inventory.getCurrentItem() != null)
+                    reduxVariables.put("active_item", playerTrigger.inventory.getCurrentItem().getDisplayName());
             }
             reduxVariables.put("world_id", String.valueOf(ReduxCommandBlockTileEntity.this.worldObj.provider.getDimensionId()));
             reduxVariables.put("world_name", ReduxCommandBlockTileEntity.this.worldObj.getWorldInfo().getWorldName());
