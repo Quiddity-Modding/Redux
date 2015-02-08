@@ -8,6 +8,7 @@ import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
@@ -20,7 +21,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.event.world.ChunkWatchEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
@@ -182,37 +183,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             ReduxCommandBlockTileEntity.this.lastResultAmount = amount;
         }
 
-        private String getTriggerStringForEvent(Event event) {
-            if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()) != null) {
-                if (event instanceof WorldEvent) {
-                    WorldEvent worldEvent = (WorldEvent)event;
-                    return String.valueOf(worldEvent.world.provider.getDimensionId());
-                } else if (event instanceof ChunkWatchEvent) {
-                    ChunkWatchEvent chunkWatchEvent = (ChunkWatchEvent) event;
-                    return chunkWatchEvent.player.getName();
-                }
-
-                switch (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass())) {
-                    case BlockBreakEvent:
-                        BlockEvent.BreakEvent breakEvent = (BlockEvent.BreakEvent) event;
-                        return breakEvent.getPlayer().getName();
-                    case BlockHarvestDropsEvent:
-                        BlockEvent.HarvestDropsEvent harvestDropsEvent = (BlockEvent.HarvestDropsEvent) event;
-                        return harvestDropsEvent.harvester.getName();
-                    case BlockMultiPlaceEvent:
-                    case BlockPlaceEvent:
-                        BlockEvent.PlaceEvent placeEvent = (BlockEvent.PlaceEvent)event;
-                        return placeEvent.player.getName();
-                    case ServerChatEvent:
-                        ServerChatEvent serverChatEvent = (ServerChatEvent) event;
-                        return serverChatEvent.username;
-                    default:
-                        return String.valueOf(ReduxCommandBlockTileEntity.this.getWorld().provider.getDimensionId());
-                }
-            }
-            return "";
-        }
-
         public void receiveEvent(Event event) {
             if (worldObj.isRemote)
                 return;
@@ -222,14 +192,100 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             if (ReduxCommandBlockTileEntity.this.getWorld().getBlockState(pos).getBlock().getClass() != ReduxBlock.class) {
                 return;
             }
-            reduxVariables.put(Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()).name(), getTriggerStringForEvent(event));
+
+            if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()) != null) {
+                EntityPlayerMP player = null;
+
+                if (event instanceof ChunkWatchEvent) {
+                    ChunkWatchEvent chunkWatchEvent = (ChunkWatchEvent) event;
+                    reduxVariables.put("chunk_x", String.valueOf(chunkWatchEvent.chunk.chunkXPos));
+                    reduxVariables.put("chunk_z", String.valueOf(chunkWatchEvent.chunk.chunkZPos));
+                    player = chunkWatchEvent.player;
+                } else if (event instanceof BlockEvent) {
+                    BlockEvent blockEvent = (BlockEvent) event;
+                    reduxVariables.put("target_x", String.valueOf(blockEvent.pos.getX()));
+                    reduxVariables.put("target_y", String.valueOf(blockEvent.pos.getY()));
+                    reduxVariables.put("target_z", String.valueOf(blockEvent.pos.getZ()));
+
+                    reduxVariables.put("chunk_x", String.valueOf(blockEvent.world.getChunkFromBlockCoords(blockEvent.pos).getChunkCoordIntPair().chunkXPos));
+                    reduxVariables.put("chunk_z", String.valueOf(blockEvent.world.getChunkFromBlockCoords(blockEvent.pos).getChunkCoordIntPair().chunkZPos));
+
+                    reduxVariables.put("target_id", ((BlockEvent) event).state.getBlock().getUnlocalizedName());
+                } else if (event instanceof ServerChatEvent) {
+                    ServerChatEvent chatEvent = (ServerChatEvent) event;
+                    reduxVariables.put("chat_message", chatEvent.message);
+                    player = chatEvent.player;
+                }  else if (event instanceof ExplosionEvent) {
+                    ExplosionEvent explosionEvent = (ExplosionEvent) event;
+                    reduxVariables.put("target_x", String.valueOf((int)explosionEvent.explosion.getPosition().xCoord));
+                    reduxVariables.put("target_y", String.valueOf((int)explosionEvent.explosion.getPosition().yCoord));
+                    reduxVariables.put("target_z", String.valueOf((int)explosionEvent.explosion.getPosition().yCoord));
+
+                    reduxVariables.put("chunk_x", String.valueOf(explosionEvent.world.getChunkFromBlockCoords(new BlockPos(explosionEvent.explosion.getPosition())).getChunkCoordIntPair().chunkXPos));
+                    reduxVariables.put("chunk_z", String.valueOf(explosionEvent.world.getChunkFromBlockCoords(new BlockPos(explosionEvent.explosion.getPosition())).getChunkCoordIntPair().chunkZPos));
+                }
+
+                reduxVariables.put("event_name", Trigger.TriggerEvent.getTriggerEventFromForgeEvent(event.getClass()).name());
+
+                reduxVariables.put("world_id", String.valueOf(ReduxCommandBlockTileEntity.this.worldObj.provider.getDimensionId()));
+                reduxVariables.put("world_name", ReduxCommandBlockTileEntity.this.worldObj.getWorldInfo().getWorldName());
+
+                reduxVariables.put("x", String.valueOf(blockPos.getX()));
+                reduxVariables.put("y", String.valueOf(blockPos.getY()));
+                reduxVariables.put("z", String.valueOf(blockPos.getZ()));
+
+                if (player != null) {
+                    reduxVariables.put("player", player.getName());
+                    reduxVariables.put("player_x", String.valueOf(player.getPosition().getX()));
+                    reduxVariables.put("player_y", String.valueOf(player.getPosition().getY()));
+                    reduxVariables.put("player_z", String.valueOf(player.getPosition().getZ()));
+                    reduxVariables.put("active_slot", String.valueOf(player.inventory.currentItem));
+                    if (player.inventory.getCurrentItem() != null)
+                        reduxVariables.put("active_item", player.inventory.getCurrentItem().getDisplayName());
+
+                }
+            }
 
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
             Stack<Integer> commandResultStack = new Stack<Integer>();
 
             lastEvent = event;
+            int skipCount = 0;
             for (String s : triggerScript.getCommands()) {
+                //noinspection StatementWithEmptyBody
+                for (;skipCount > 0; skipCount--);
+
                 String parsedCommand = s;
+
+                if (parsedCommand.startsWith("/stopscript")) {
+                    String[] split = parsedCommand.split(" ");
+                    if (split.length == 2) {
+                        boolean stopScript = Boolean.valueOf(split[1]);
+                        if (stopScript)
+                            break;
+                    }
+                    continue;
+                } else if (parsedCommand.startsWith("/stopdefault")) {
+                    String[] split = parsedCommand.split(" ");
+                    if (split.length == 2) {
+                        boolean stopEvent = Boolean.valueOf(split[1]);
+                        if (event.isCancelable()) {
+                            event.setCanceled(stopEvent);
+                            break;
+                        }
+                    }
+                    continue;
+                } else if (parsedCommand.startsWith("/skip")) {
+                    String[] split = parsedCommand.split(" ");
+                    if (split.length == 3) {
+                        try {
+                            int skip = Integer.parseInt(split[1]);
+                            if (Boolean.parseBoolean(split[2]) && skip > 0)
+                                skipCount = skip;
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    continue;
+                }
 
                 Pattern reduxPattern = Pattern.compile("\\$redux\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
                 Matcher reduxMatcher = reduxPattern.matcher(parsedCommand);

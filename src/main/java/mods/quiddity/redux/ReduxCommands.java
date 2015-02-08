@@ -63,7 +63,7 @@ public class ReduxCommands {
                 if (blockState.getBlock() instanceof ReduxBlock) {
                     PropertyInteger property = ((ReduxBlock) blockState.getBlock()).getPropertyFromName(args[0]);
                     if (property != null && blockState.getValue(property) != null && blockState.getValue(property).equals(testValue)) {
-                        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, ((Integer) blockState.getValue(property)) > 15 ? 15 : ((Integer) blockState.getValue(property)));
+                        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer) blockState.getValue(property));
                     }
                 } else {
                     throw new CommandException("This command is only useful in Redux Pack Blocks");

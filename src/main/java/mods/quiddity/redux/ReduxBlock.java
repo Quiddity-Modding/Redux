@@ -97,7 +97,8 @@ public class ReduxBlock extends net.minecraft.block.Block implements ITileEntity
     @Override
     public int getComparatorInputOverride(World worldIn, BlockPos pos) {
         TileEntity tileentity = worldIn.getTileEntity(pos);
-        return tileentity instanceof ReduxCommandBlockTileEntity ? ((ReduxCommandBlockTileEntity)tileentity).getLastSuccessCount() : 0;
+        return tileentity instanceof ReduxCommandBlockTileEntity ? ((ReduxCommandBlockTileEntity)tileentity).getLastSuccessCount() > 15
+                ? 15 : ((ReduxCommandBlockTileEntity)tileentity).getLastSuccessCount(): 0;
     }
 
     public PropertyInteger getPropertyFromName(String name) {
