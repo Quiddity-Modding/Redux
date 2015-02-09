@@ -20,10 +20,20 @@ import java.util.*;
  */
 @SuppressWarnings("all")
 public class Config {
+    /**
+     * A list of feature flags. No flags are implemented yet
+     * {@link mods.quiddity.redux.json.model.Flags}
+     */
     @Nullable
-    private List<Flags<String, ?>> features;
-    @Nonnull
-    private List<String> packs;
+    protected List<Flags<String, ?>> features;
+
+    /**
+     * A list of packs to load. Must be the same name as the pack folder/zip and id
+     * Not <i>required</i> however this mod does nothing without them
+     * {@link mods.quiddity.redux.json.model.Pack}
+     */
+    @Nullable
+    protected List<String> packs;
 
     private transient List<String> humanPackNames;
     private transient Map<Pack, File> packSourceFileMap;

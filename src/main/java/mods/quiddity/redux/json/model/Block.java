@@ -18,46 +18,185 @@ import java.util.List;
  */
 @SuppressWarnings("all")
 public class Block {
+    /**
+     * If this block should extend another block.
+     * {@link mods.quiddity.redux.json.model.Block}
+     */
+    @Nullable
+    protected String extendsBlock;
+    private transient Block reduxExtendsBlock = null;
+
+    /**
+     * <h1>Required</h1>
+     * The id of the block. Should not conflict with any other {@link mods.quiddity.redux.json.model.Block} of the {@link mods.quiddity.redux.json.model.Pack}
+     * <em>Should contain no spaces or special characters.</em>
+     * <em>ASCII</em>
+     */
     @Nonnull
-    private String id;
+    protected String id;
+
+    /**
+     * <h1>Required</h1>
+     * The human readable name of the block.
+     */
     @Nonnull
-    private String name;
+    protected String name;
+
+    /**
+     * <h1>Required</h1>
+     * The material of the block.
+     * The valid properties are:
+     * <ul>
+     *     <li>air</li>
+     *     <li>grass</li>
+     *     <li>ground</li>
+     *     <li>wood</li>
+     *     <li>rock</li>
+     *     <li>iron</li>
+     *     <li>anvil</li>
+     *     <li>water</li>
+     *     <li>lava</li>
+     *     <li>leaves</li>
+     *     <li>plants</li>
+     *     <li>vine</li>
+     *     <li>sponge</li>
+     *     <li>cloth</li>
+     *     <li>fire</li>
+     *     <li>sand</li>
+     *     <li>circuits</li>
+     *     <li>carpet</li>
+     *     <li>glass</li>
+     *     <li>redstoneLight</li>
+     *     <li>tnt</li>
+     *     <li>coral</li>
+     *     <li>ice</li>
+     *     <li>packedIce</li>
+     *     <li>snow</li>
+     *     <li>craftedSnow</li>
+     *     <li>cactus</li>
+     *     <li>clay</li>
+     *     <li>gourd</li>
+     *     <li>dragonEgg</li>
+     *     <li>portal</li>
+     *     <li>cake</li>
+     *     <li>web</li>
+     *     <li>piston</li>
+     *     <li>barrier</li>
+     * </ul>
+     */
     @Nonnull
-    private String description;
-    @Nonnull
-    private String material;
+    protected String material;
 
     @Nullable
-    private boolean full_cube, is_weak;
+    protected String description;
+
+    /**
+     * Is it a full cube? I.E. should it render transparency.
+     * Defaults to true
+     * Or does the cube not fill the whole block?
+     * <em>Cannot be inherited</em>
+     */
     @Nullable
-    private List<CollisionBox> collisionBoxes;
+    protected boolean full_cube = true;
+
+    /**
+     * Does the block break like redstone when water/lava flow over it.
+     * <em>Cannot be inherited</em>
+     */
     @Nullable
-    private boolean directional;
+    protected boolean is_weak;
+
+    /**
+     * A list of collision boxes to add.
+     * An empty list means that the block is uncollidable.
+     * The absence of the collison_boxes property indicates to use the default full block collision.
+     */
     @Nullable
-    private List<Flags<String, Integer>> custom_properties;
+    protected List<CollisionBox> collisionBoxes;
+
+    /**
+     * Does this block use the ‘facing’ property to change textures/”rotate” the block.
+     * <em>Cannot be inherited</em>
+     */
     @Nullable
-    private List<String> ignored_properties;
+    protected boolean directional;
+
+    /**
+     * Extra properties that are used either in the scripts or for model rendering. They are integer properties.
+     * <em>These must be <b>INTEGER</b> properties</em>
+     */
     @Nullable
-    private String redstone_output_property;
+    protected List<Flags<String, Integer>> custom_properties;
+
+    /**
+     * Properties to ignore when rendering.
+     * I.E. Properties that do not affect the look of the block.
+     */
     @Nullable
-    private String creative_tab;
+    protected List<String> ignored_properties;
+
+    /**
+     * The property name to use for redstone output.
+     * If this property is null or non-existent then the block will not emit any redstone.
+     */
     @Nullable
-    private String creative_tab_icon;
+    protected String redstone_output_property;
+
+    /**
+     * Name of vanilla or new tab.
+     */
     @Nullable
-    private int tick_rate;
+    protected String creative_tab;
+
+    /**
+     * The name/id of the item to show on the tab if it’s a new tab only.
+     * Format: ‘domain:item’ I.E. ‘minecraft:stick’
+     */
     @Nullable
-    private List<String> ore_dictionary;
+    protected String creative_tab_icon;
+
+    /**
+     * The tick rate of the block. 0 Means no ticking.
+     * <em>Without this properity set no {@link mods.quiddity.redux.json.model.Trigger.TriggerEvent}.OnTick events will be called</em>
+     */
     @Nullable
-    private List<Trigger> script;
+    protected int tick_rate = -1;
+
+    /**
+     * List of names for the ore dictionary to recognize the block as for crafting.
+     * <em>Not Implemented Yet</em>
+     */
+    @Nullable
+    protected List<String> ore_dictionary;
+
+    /**
+     * Block scripting using command block logic.
+     * {@link mods.quiddity.redux.json.model.Trigger}
+     * {@link mods.quiddity.redux.json.model.Trigger.TriggerEvent}
+     */
+    @Nullable
+    protected List<Trigger> script;
 
     private transient CreativeTabs creativeTabObject = null;
+
+    public String getExtendsBlock() {
+        return extendsBlock;
+    }
+
+    public Block getReduxExtendsBlock() {
+        return reduxExtendsBlock;
+    }
+
+    public void setReduxExtendsBlock(Block reduxExtendsBlock) {
+        this.reduxExtendsBlock = reduxExtendsBlock;
+    }
 
     public String getName() {
         return name;
     }
 
     public String getDescription() {
-        return description == null ? "" : description;
+        return description == null ? reduxExtendsBlock == null ? "" : reduxExtendsBlock.getDescription() : description;
     }
 
     public String getId() {
@@ -65,14 +204,17 @@ public class Block {
     }
 
     public int getTickRate() {
-        return tick_rate;
+        return tick_rate == -1 ? reduxExtendsBlock == null ? 0 : reduxExtendsBlock.getTickRate() : tick_rate;
     }
 
     public boolean tickable() {
-        return tick_rate > 0;
+        return getTickRate() > 0;
     }
 
     public Material getMaterial() {
+        if (material == null && reduxExtendsBlock != null) {
+            return reduxExtendsBlock.getMaterial();
+        }
         try {
             return (Material) Material.class.getField(material).get(null);
         } catch (Exception e) {
@@ -87,11 +229,13 @@ public class Block {
     public List<CollisionBox> getCollisionBoxes() {
         if (collisionBoxes != null)
             return ImmutableList.copyOf(collisionBoxes);
+        if (reduxExtendsBlock != null)
+            return reduxExtendsBlock.getCollisionBoxes();
         return null;
     }
 
     public boolean hasMultipleCollisionBoxes() {
-        return collisionBoxes != null && collisionBoxes.size() > 1;
+        return getCollisionBoxes() != null && getCollisionBoxes().size() > 1;
     }
 
     public boolean isFullCube() {
@@ -104,6 +248,8 @@ public class Block {
 
     public CreativeTabs getCreativeTab() {
         if (creative_tab == null || creative_tab.isEmpty()) {
+            if (reduxExtendsBlock != null && reduxExtendsBlock.getCreativeTab() != CreativeTabs.tabAllSearch)
+                return reduxExtendsBlock.getCreativeTab();
             return creativeTabObject = CreativeTabs.tabAllSearch;
         } else if (creativeTabObject == null) {
             for (CreativeTabs tab : CreativeTabs.creativeTabArray) {
@@ -115,7 +261,8 @@ public class Block {
                     @Override
                     public Item getTabIconItem() {
                         return (creative_tab_icon == null || creative_tab_icon.isEmpty() || Item.getByNameOrId(creative_tab_icon) == null)
-                                ? ItemBlock.getItemFromBlock(Blocks.air) : Item.getByNameOrId(creative_tab_icon);
+                                ? reduxExtendsBlock == null ? ItemBlock.getItemFromBlock(Blocks.air) : reduxExtendsBlock.creative_tab_icon == null ?
+                                ItemBlock.getItemFromBlock(Blocks.air) : Item.getByNameOrId(reduxExtendsBlock.creative_tab_icon) : Item.getByNameOrId(creative_tab_icon);
                     }
                 };
             }
@@ -125,27 +272,39 @@ public class Block {
     }
 
     public List<Trigger> getScript() {
+        if (script == null && reduxExtendsBlock != null && reduxExtendsBlock.getScript() != null)
+            return reduxExtendsBlock.getScript();
+        if (script == null)
+            return null;
         return ImmutableList.copyOf(script);
     }
 
     public List<String> getOreDictionaryNames() {
+        if (ore_dictionary == null && reduxExtendsBlock != null && reduxExtendsBlock.getOreDictionaryNames() != null)
+            return reduxExtendsBlock.getOreDictionaryNames();
+        if (ore_dictionary == null)
+            return null;
         return ImmutableList.copyOf(ore_dictionary);
     }
 
     public List<Flags<String, Integer>> getCustomProperties() {
+        if (custom_properties == null && reduxExtendsBlock != null && reduxExtendsBlock.getCustomProperties() != null)
+            return reduxExtendsBlock.getCustomProperties();
         if (custom_properties == null)
             return null;
         return ImmutableList.copyOf(custom_properties);
     }
 
     public List<String> getIgnoredProperties() {
+        if (ignored_properties == null && reduxExtendsBlock != null && reduxExtendsBlock.getIgnoredProperties() != null)
+            return reduxExtendsBlock.getIgnoredProperties();
         if (ignored_properties == null)
             return null;
         return ImmutableList.copyOf(ignored_properties);
     }
 
     public String getRedstoneOutputProperty() {
-        return redstone_output_property == null ? "" : redstone_output_property;
+        return redstone_output_property == null ? reduxExtendsBlock == null ? "" : reduxExtendsBlock.getRedstoneOutputProperty() : redstone_output_property;
     }
 
     @Override

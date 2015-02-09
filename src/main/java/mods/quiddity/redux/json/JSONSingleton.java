@@ -57,7 +57,7 @@ public class JSONSingleton {
     }
 
     public static final class JSONLoadException extends Exception {
-        public JSONLoadException (Throwable cause, String format, String... args) {
+        public JSONLoadException (Throwable cause, String format, Object... args) {
             super(String.format(format, args), cause);
         }
     }

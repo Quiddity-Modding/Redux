@@ -68,10 +68,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
     public void setupTileEntity(String blockId) {
         Pack p = Redux.instance.getReduxConfiguration().getPackFromId(packId);
         if (p == null) throw new AssertionError();
-        for (Block b : p.getBlocks()) {
-            if (b.getId().equalsIgnoreCase(blockId))
-                reduxBlock = b;
-        }
+        reduxBlock = p.getBlockFromId(blockId);
         if (reduxBlock == null) throw new AssertionError();
 
         specialReceivers.clear();

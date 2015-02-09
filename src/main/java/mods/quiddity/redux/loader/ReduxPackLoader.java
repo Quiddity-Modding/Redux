@@ -42,13 +42,22 @@ public class ReduxPackLoader {
         }
 
         for (Pack p : configuration.getPacks()) {
+            if (p.getName() == null || p.getName().isEmpty() || p.getId() == null || p.getId().isEmpty()) {
+                Redux.instance.getLogger().warn("Package found without name and/or id, skipping.");
+                continue;
+            }
+
             ModContainer packContainer = new ReduxPackModContainer(p, Redux.instance);
             FMLCommonHandler.instance().addModToResourcePack(packContainer);
             children.add(packContainer);
             if (p.getBlocks() == null)
-                continue;;
+                continue;
 
             for (Block b : p.getBlocks()) {
+                if (b.getExtendsBlock() != null && b.getReduxExtendsBlock() == null) {
+                    b.setReduxExtendsBlock(p.getBlockFromId(b.getExtendsBlock()));
+                }
+
                 ReduxBlock.blockThreadLocal.set(b);
                 ReduxBlock mcBlock = new ReduxBlock(p, b);
                 ReduxBlock.blockThreadLocal.remove();
