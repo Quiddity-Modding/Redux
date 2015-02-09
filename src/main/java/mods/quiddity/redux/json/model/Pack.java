@@ -52,7 +52,7 @@ public class Pack {
      * {@link mods.quiddity.redux.json.model.Block}
      */
     @Nullable
-    protected List<Block> block_list;
+    protected transient List<Block> block_list;
 
     /**
      * A list of items to load.
@@ -65,6 +65,7 @@ public class Pack {
     protected List<Item> item_list;
 
     private transient Map<String, Block> idMap = null;
+    private transient boolean hasAddedBlocks = false;
 
     public String getName() {
         return name;
@@ -75,7 +76,14 @@ public class Pack {
     }
 
     public List<Block> getBlocks() {
-        return block_list == null ? null : ImmutableList.copyOf(block_list);
+        return block_list == null ? null : block_list;
+    }
+
+    public void setBlockList(List<Block> blocks) {
+        if (!hasAddedBlocks) {
+            block_list = ImmutableList.copyOf(blocks);
+            hasAddedBlocks = true;
+        }
     }
 
     public Block getBlockFromId(String id) {

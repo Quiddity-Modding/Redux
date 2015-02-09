@@ -1,7 +1,12 @@
 package mods.quiddity.redux.loader;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.ReduxBlock;
+import mods.quiddity.redux.json.JSONSingleton;
 import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Config;
 import mods.quiddity.redux.json.model.Pack;
@@ -16,6 +21,7 @@ import net.minecraftforge.fml.common.registry.GameData;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
