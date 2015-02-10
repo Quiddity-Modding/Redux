@@ -196,6 +196,11 @@ public class ReduxCommands {
         }
 
         @Override
+        public int getRequiredPermissionLevel() {
+            return 2;
+        }
+
+        @Override
         public String getName() {
             return name;
         }
