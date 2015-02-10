@@ -143,7 +143,10 @@ public class ReduxCommands {
                 }
             }
             sender.addChatMessage(new ChatComponentText(String.valueOf(result)));
-
+            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+                ReduxCommandBlockTileEntity.ReduxBlockEventReceiver eventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
+                eventReceiver.setLastTest(result);
+            }
             if (result == 0)
                 throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }

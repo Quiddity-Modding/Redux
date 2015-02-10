@@ -206,6 +206,10 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             }
         }
 
+        public void setLastTest(int result) {
+            reduxVariables.put("test", String.valueOf(result));
+        }
+
         public void receiveEvent(Event event) {
             if (worldObj.isRemote)
                 return;
