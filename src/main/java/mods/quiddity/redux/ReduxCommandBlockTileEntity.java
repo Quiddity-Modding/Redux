@@ -301,6 +301,26 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 for (;skipCount > 0; skipCount--);
 
                 String parsedCommand = s;
+                Pattern reduxPattern = Pattern.compile("\\$redux\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
+                Matcher reduxMatcher = reduxPattern.matcher(parsedCommand);
+                Pattern commandPattern = Pattern.compile("\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
+                while (reduxMatcher.find() && !reduxMatcher.hitEnd()) {
+                    MatchResult result = reduxMatcher.toMatchResult();
+                    Matcher commandMatcher = commandPattern.matcher(result.group());
+                    if (!commandMatcher.find())
+                        continue;
+                    String command = commandMatcher.toMatchResult().group().replaceAll("\\[", "").replaceAll("\\]", "");
+
+                    if (command.equalsIgnoreCase("PEEK") || command.equalsIgnoreCase("POP")) {
+                        if (command.equalsIgnoreCase("PEEK")) {
+                            reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(String.valueOf(commandResultStack.peek())));
+                        } else if (command.equalsIgnoreCase("POP")) {
+                            reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(String.valueOf(commandResultStack.pop())));
+                        }
+                    } else if (reduxVariables.containsKey(command)) {
+                        reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(reduxVariables.get(command)));
+                    }
+                }
 
                 if (parsedCommand.startsWith("/stopscript")) {
                     String[] split = parsedCommand.split(" ");
@@ -330,27 +350,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                         } catch (NumberFormatException ignored) {}
                     }
                     continue;
-                }
-
-                Pattern reduxPattern = Pattern.compile("\\$redux\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
-                Matcher reduxMatcher = reduxPattern.matcher(parsedCommand);
-                Pattern commandPattern = Pattern.compile("\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
-                while (reduxMatcher.find() && !reduxMatcher.hitEnd()) {
-                    MatchResult result = reduxMatcher.toMatchResult();
-                    Matcher commandMatcher = commandPattern.matcher(result.group());
-                    if (!commandMatcher.find())
-                        continue;
-                    String command = commandMatcher.toMatchResult().group().replaceAll("\\[", "").replaceAll("\\]", "");
-
-                    if (command.equalsIgnoreCase("PEEK") || command.equalsIgnoreCase("POP")) {
-                        if (command.equalsIgnoreCase("PEEK")) {
-                            reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(String.valueOf(commandResultStack.peek())));
-                        } else if (command.equalsIgnoreCase("POP")) {
-                            reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(String.valueOf(commandResultStack.pop())));
-                        }
-                    } else if (reduxVariables.containsKey(command)) {
-                        reduxMatcher = reduxPattern.matcher(parsedCommand = reduxMatcher.replaceFirst(reduxVariables.get(command)));
-                    }
                 }
 
                 this.successCount = icommandmanager.executeCommand(this, parsedCommand);

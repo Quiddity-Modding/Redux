@@ -101,7 +101,7 @@ public class ReduxResourcePack implements IResourcePack {
     }
 
     private boolean checkSandbox(String resource) {
-        if (resource.contains("..") || resource.startsWith("/") || resource.charAt(1) == ':') {
+        if (resource.contains("..") || resource.startsWith("/")) {
             Redux.instance.getLogger().warn("Critical security error! Tried to access file(s) outside of the Redux config folder with the path of: %s\nWill deny requested file.", resource);
             return false;
         }
