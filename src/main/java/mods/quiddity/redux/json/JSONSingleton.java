@@ -7,7 +7,6 @@ import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Config;
 import mods.quiddity.redux.json.model.Pack;
-import scala.util.parsing.json.JSON;
 
 import java.io.File;
 import java.io.IOException;
