@@ -338,10 +338,8 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     String[] split = parsedCommand.split(" ");
                     if (split.length == 2) {
                         boolean stopEvent = Boolean.valueOf(split[1]);
-                        if (event != null && event.isCancelable()) {
+                        if (event != null && event.isCancelable())
                             event.setCanceled(stopEvent);
-                            break;
-                        }
                     }
                     continue;
                 } else if (parsedCommand.startsWith("/skip")) {
