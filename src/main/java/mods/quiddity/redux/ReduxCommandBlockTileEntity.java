@@ -297,8 +297,10 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             lastEvent = event;
             int skipCount = 0;
             for (String s : triggerScript.getCommands()) {
-                //noinspection StatementWithEmptyBody
-                for (;skipCount > 0; skipCount--) { continue; }
+                if (skipCount > 0) {
+                    skipCount--;
+                    continue;
+                }
 
                 String parsedCommand = s;
                 Pattern reduxPattern = Pattern.compile("\\$redux\\[\\w{1,}\\]");
