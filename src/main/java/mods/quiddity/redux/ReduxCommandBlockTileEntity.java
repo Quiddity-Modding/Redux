@@ -48,6 +48,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
     protected final Set<ReduxBlockEventReceiver> eventReceivers = new HashSet<ReduxBlockEventReceiver>();
     protected final Map<Trigger.TriggerEvent, Set<ReduxBlockEventReceiver>> specialReceivers = new HashMap<Trigger.TriggerEvent, Set<ReduxBlockEventReceiver>>();
     protected final Map<String, String> reduxVariables = new HashMap<String, String>();
+    protected final Stack<Integer> commandResultStack = new Stack<Integer>();
 
     public ReduxCommandBlockTileEntity() {}
 
@@ -134,7 +135,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
 
     protected class ReduxBlockEventReceiver implements ICommandSender {
         private final Trigger triggerScript;
-        private int successCount;
         protected Event lastEvent = null;
 
         public ReduxBlockEventReceiver(Trigger triggerScript) {
@@ -196,14 +196,20 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         public void setCommandStat(CommandResultStats.Type type, int amount) {
             ReduxCommandBlockTileEntity.this.lastResultType = type;
             ReduxCommandBlockTileEntity.this.lastResultAmount = amount;
+            if (type == CommandResultStats.Type.SUCCESS_COUNT) {
+                commandResultStack.push(amount);
+                IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(ReduxCommandBlockTileEntity.this.pos).getBlock().getDefaultState();
+                ReduxCommandBlockTileEntity.this.getWorld().setBlockState(ReduxCommandBlockTileEntity.this.pos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, amount));
+                ReduxCommandBlockTileEntity.this.lastSuccessCount = amount;
+            }
         }
 
         public void receiveEvent(Event event) {
             if (worldObj.isRemote)
                 return;
+            commandResultStack.clear();
 
             BlockPos blockPos = ReduxCommandBlockTileEntity.this.pos;
-            IBlockState defaultState = ReduxCommandBlockTileEntity.this.getWorld().getBlockState(blockPos).getBlock().getDefaultState();
             // Check if the block has changed as result of an event. I.E. BlockBreak
             if (ReduxCommandBlockTileEntity.this.getWorld().getBlockState(pos).getBlock().getClass() != ReduxBlock.class) {
                 return;
@@ -297,7 +303,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             reduxVariables.put("z", String.valueOf(blockPos.getZ()));
 
             ICommandManager icommandmanager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
-            Stack<Integer> commandResultStack = new Stack<Integer>();
             lastEvent = event;
             int skipCount = 0;
             for (String s : triggerScript.getCommands()) {
@@ -372,10 +377,8 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     continue;
                 }
 
-                this.successCount = icommandmanager.executeCommand(this, parsedCommand);
-                commandResultStack.push(successCount);
-                ReduxCommandBlockTileEntity.this.getWorld().setBlockState(blockPos, defaultState.withProperty(ReduxBlock.SUCCESS_COUNT_META, successCount));
-                ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
+                icommandmanager.executeCommand(this, parsedCommand);
+
             }
         }
     }

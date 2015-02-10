@@ -140,7 +140,7 @@ public class ReduxCommands {
                 if (args[1].equalsIgnoreCase("==")) {
                     result = args[0].equalsIgnoreCase(args[2]) ? 1 : 0;
                 } else {
-                    result = !(args[0].equalsIgnoreCase(args[2])) ? 1 : 0;
+                    result = args[0].equalsIgnoreCase(args[2]) ? 0 : 1;
                 }
             }
             sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, result);
