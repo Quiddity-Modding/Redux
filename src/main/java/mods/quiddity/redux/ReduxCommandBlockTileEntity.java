@@ -160,7 +160,9 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         }
 
         @Override
-        public void addChatMessage(IChatComponent message) { }
+        public void addChatMessage(IChatComponent message) {
+            reduxVariables.put("msg", message.getUnformattedTextForChat());
+        }
 
         @Override
         public boolean canUseCommand(int permLevel, String commandName) {
@@ -378,7 +380,6 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 }
 
                 icommandmanager.executeCommand(this, parsedCommand);
-
             }
         }
     }

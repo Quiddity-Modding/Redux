@@ -31,7 +31,6 @@ public class ReduxCommands {
                         ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
 
                         if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(reduxBlockEventReceiver.getLastEvent().getClass()) == event) {
-                            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 1);
                             return;
                         }
                     } else {
@@ -41,7 +40,7 @@ public class ReduxCommands {
             } catch (IllegalArgumentException ignored) {
                 throw new CommandException("Trigger type %s does not exist!", trigger);
             }
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+            throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }
     });
 
@@ -62,8 +61,8 @@ public class ReduxCommands {
                 IBlockState blockState = sender.getEntityWorld().getBlockState(reduxBlockEventReceiver.getPosition());
                 if (blockState.getBlock() instanceof ReduxBlock) {
                     PropertyInteger property = ((ReduxBlock) blockState.getBlock()).getPropertyFromName(args[0]);
-                    if (property != null && blockState.getValue(property) != null && blockState.getValue(property).equals(testValue)) {
-                        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (Integer) blockState.getValue(property));
+                    if (property == null || blockState.getValue(property) == null || !blockState.getValue(property).equals(testValue)) {
+                        throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
                     }
                 } else {
                     throw new CommandException("This command is only useful in Redux Pack Blocks");
@@ -71,7 +70,7 @@ public class ReduxCommands {
             } else {
                 throw new CommandException("This command is only useful in Redux Pack Blocks");
             }
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+            throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }
     });
 
@@ -94,7 +93,7 @@ public class ReduxCommands {
                     PropertyInteger property = ((ReduxBlock) blockState.getBlock()).getPropertyFromName(args[0]);
                     if (property != null && blockState.getValue(property) != null) {
                         reduxBlockEventReceiver.getEntityWorld().setBlockState(reduxBlockEventReceiver.getPosition(), blockState.withProperty(property, setValue));
-                        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 1);
+                        return;
                     }
                 } else {
                     throw new CommandException("This command is only useful in Redux Pack Blocks");
@@ -102,7 +101,7 @@ public class ReduxCommands {
             } else {
                 throw new CommandException("This command is only useful in Redux Pack Blocks");
             }
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, 0);
+            throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }
     });
 
@@ -143,8 +142,10 @@ public class ReduxCommands {
                     result = args[0].equalsIgnoreCase(args[2]) ? 0 : 1;
                 }
             }
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, result);
             sender.addChatMessage(new ChatComponentText(String.valueOf(result)));
+
+            if (result == 0)
+                throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }
     });
 
@@ -158,7 +159,6 @@ public class ReduxCommands {
                 int lower = Integer.parseInt(args[0]);
                 int upper = Integer.parseInt(args[1]);
                 int rand = lower + random.nextInt(upper - lower + 1);
-                sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, rand);
                 sender.addChatMessage(new ChatComponentText(String.valueOf(rand)));
             } catch (NumberFormatException e) {
                 throw new CommandException("First and Second parameters must be integers!");
