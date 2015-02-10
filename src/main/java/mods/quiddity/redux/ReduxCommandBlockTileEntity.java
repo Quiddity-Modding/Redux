@@ -23,6 +23,8 @@ import net.minecraftforge.event.world.ExplosionEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
+import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -329,7 +331,12 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 if (parsedCommand.startsWith("/stopscript")) {
                     String[] split = parsedCommand.split(" ");
                     if (split.length == 2) {
-                        boolean stopScript = Boolean.valueOf(split[1]);
+                        boolean stopScript;
+                        if (isNumeric(split[1])) {
+                            stopScript = Integer.parseInt(split[1]) != 0;
+                        } else {
+                            stopScript = split[1].equalsIgnoreCase("true");
+                        }
                         if (stopScript)
                             break;
                     }
@@ -337,7 +344,12 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 } else if (parsedCommand.startsWith("/stopdefault")) {
                     String[] split = parsedCommand.split(" ");
                     if (split.length == 2) {
-                        boolean stopEvent = Boolean.valueOf(split[1]);
+                        boolean stopEvent;
+                        if (isNumeric(split[1])) {
+                            stopEvent = Integer.parseInt(split[1]) != 0;
+                        } else {
+                            stopEvent = split[1].equalsIgnoreCase("true");
+                        }
                         if (event != null && event.isCancelable())
                             event.setCanceled(stopEvent);
                     }
@@ -347,7 +359,13 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                     if (split.length == 3) {
                         try {
                             int skip = Integer.parseInt(split[1]);
-                            if (Boolean.parseBoolean(split[2]) && skip > 0)
+                            boolean test;
+                            if (isNumeric(split[2])) {
+                                test = Integer.parseInt(split[2]) != 0;
+                            } else {
+                                test = split[2].equalsIgnoreCase("true");
+                            }
+                            if (test && skip > 0)
                                 skipCount = skip;
                         } catch (NumberFormatException ignored) {}
                     }
@@ -360,5 +378,12 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 ReduxCommandBlockTileEntity.this.lastSuccessCount = this.successCount;
             }
         }
+    }
+
+    protected static boolean isNumeric(String str) {
+        NumberFormat formatter = NumberFormat.getInstance();
+        ParsePosition pos = new ParsePosition(0);
+        formatter.parse(str, pos);
+        return str.length() == pos.getIndex();
     }
 }
