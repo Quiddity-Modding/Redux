@@ -16,7 +16,6 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -81,43 +80,39 @@ public class JSONSingleton {
             if (blockList.isJsonArray()) {
                 JsonArray blockFiles = blockList.getAsJsonArray();
                 final List<Block> blocks = new ArrayList<Block>();
-                blockFiles.forEach(new Consumer<JsonElement>() {
-                    @Override
-                    public void accept(JsonElement jsonElement) {
-                        if (jsonElement.isJsonPrimitive() && jsonElement.getAsJsonPrimitive().isString()) {
-                            String filename = jsonElement.getAsJsonPrimitive().getAsString();
-                            Block block = null;
-                            if (packSource.isFile() && packSource.getName().endsWith(".zip")) {
-                                try {
-                                    ZipFile zipFile = new ZipFile(packSource);
-                                    ZipEntry blockJson = zipFile.getEntry(filename);
-                                    if (blockJson == null) {
-                                        throw new JsonParseException("The requested block json file does not exist in the pack!");
-                                    } else {
-                                        block = normalGson.fromJson(new InputStreamReader(zipFile.getInputStream(blockJson)), Block.class);
-                                    }
-                                } catch (IOException e) {
-                                    throw new JsonParseException(e);
+                for (JsonElement jsonElement : blockFiles) {
+                    if (jsonElement.isJsonPrimitive() && jsonElement.getAsJsonPrimitive().isString()) {
+                        String filename = jsonElement.getAsJsonPrimitive().getAsString();
+                        Block block = null;
+                        if (packSource.isFile() && packSource.getName().endsWith(".zip")) {
+                            try {
+                                ZipFile zipFile = new ZipFile(packSource);
+                                ZipEntry blockJson = zipFile.getEntry(filename);
+                                if (blockJson == null) {
+                                    throw new JsonParseException("The requested block json file does not exist in the pack!");
+                                } else {
+                                    block = normalGson.fromJson(new InputStreamReader(zipFile.getInputStream(blockJson)), Block.class);
                                 }
-                            } else if (packSource.getParentFile().isDirectory()) {
-                                try {
-                                    String json = Files.toString(new File(packSource.getParentFile(), filename), charset);
-                                    block = normalGson.fromJson(json, Block.class);
-                                } catch (Exception e) {
-                                    throw new JsonParseException(e);
-                                }
+                            } catch (IOException e) {
+                                throw new JsonParseException(e);
                             }
-                            if (block != null) {
-                                blocks.add(block);
-                            } else {
-                                throw new JsonParseException("Unable to load the block json file!");
+                        } else if (packSource.getParentFile().isDirectory()) {
+                            try {
+                                block = normalGson.fromJson(Files.toString(new File(packSource.getParentFile(), filename), charset), Block.class);
+                            } catch (Exception e) {
+                                throw new JsonParseException(e);
                             }
-                        } else if (jsonElement.isJsonObject()) {
-                            Block block = context.deserialize(jsonElement, Block.class);
-                            blocks.add(block);
                         }
+                        if (block != null) {
+                            blocks.add(block);
+                        } else {
+                            throw new JsonParseException("Unable to load the block json file!");
+                        }
+                    } else if (jsonElement.isJsonObject()) {
+                        Block block = context.deserialize(jsonElement, Block.class);
+                        blocks.add(block);
                     }
-                });
+                }
                 pack.setBlockList(blocks);
             }
             return pack;
