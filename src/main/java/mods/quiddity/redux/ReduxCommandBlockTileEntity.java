@@ -298,18 +298,18 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             int skipCount = 0;
             for (String s : triggerScript.getCommands()) {
                 //noinspection StatementWithEmptyBody
-                for (;skipCount > 0; skipCount--);
+                for (;skipCount > 0; skipCount--) { continue; }
 
                 String parsedCommand = s;
-                Pattern reduxPattern = Pattern.compile("\\$redux\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
+                Pattern reduxPattern = Pattern.compile("\\$redux\\[\\w{1,}\\]");
                 Matcher reduxMatcher = reduxPattern.matcher(parsedCommand);
-                Pattern commandPattern = Pattern.compile("\\[[a-zA-Z]+\\]", Pattern.CASE_INSENSITIVE);
-                while (reduxMatcher.find() && !reduxMatcher.hitEnd()) {
+                Pattern commandPattern = Pattern.compile("\\[\\w{1,}\\]");
+                while (reduxMatcher.find()) {
                     MatchResult result = reduxMatcher.toMatchResult();
                     Matcher commandMatcher = commandPattern.matcher(result.group());
                     if (!commandMatcher.find())
                         continue;
-                    String command = commandMatcher.toMatchResult().group().replaceAll("\\[", "").replaceAll("\\]", "");
+                    String command = commandMatcher.toMatchResult().group().replaceFirst("\\[", "").replaceFirst("\\]", "");
 
                     if (command.equalsIgnoreCase("PEEK") || command.equalsIgnoreCase("POP")) {
                         if (command.equalsIgnoreCase("PEEK")) {
