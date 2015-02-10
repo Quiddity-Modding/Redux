@@ -284,7 +284,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 reduxVariables.put("player_z", String.valueOf(playerTrigger.getPosition().getZ()));
                 reduxVariables.put("active_slot", String.valueOf(playerTrigger.inventory.currentItem));
                 if (playerTrigger.inventory.getCurrentItem() != null)
-                    reduxVariables.put("active_item", playerTrigger.inventory.getCurrentItem().getDisplayName());
+                    reduxVariables.put("active_item", playerTrigger.inventory.getCurrentItem().getItem().delegate.name());
             }
             reduxVariables.put("world_id", String.valueOf(ReduxCommandBlockTileEntity.this.worldObj.provider.getDimensionId()));
             reduxVariables.put("world_name", ReduxCommandBlockTileEntity.this.worldObj.getWorldInfo().getWorldName());
