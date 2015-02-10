@@ -1,0 +1,49 @@
+{
+    "id" : "",
+    "name" : "",
+    "author" : "",
+    "description" : "",
+    "block_list" : [
+        {
+            "extends" : "",
+            "id" : "",
+            "name" : "",
+            "description" : "",
+            "material" : "",
+            "full_cube" : true,
+            "is_weak" : false,
+            "collision_boxes" : [
+                {
+                    "minX" : 0.0,
+                    "minY" : 0.0,
+                    "minZ" : 0.0,
+                    "maxX" : 1.0,
+                    "maxY" : 1.0,
+                    "maxZ" : 1.0
+                }
+            ],
+            "directional" : false,
+            "custom_properties" : [
+                {
+                    "<property name>" : ""
+                }
+            ],
+            "ignored_properties" : [
+                ""
+            ],
+            "redstone_output_property" : "",
+            "creative_tab" : "",
+            "creative_tab_icon" : "",
+            "tick_rate" : 0,
+            "script" : [
+                {
+                    "trigger" : "",
+                    "on_cause" : true,
+                    "commands" : [
+                        ""
+                    ]
+                }
+            ]
+        }
+    ]
+}
