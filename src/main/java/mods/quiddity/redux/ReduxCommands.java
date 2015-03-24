@@ -2,7 +2,10 @@ package mods.quiddity.redux;
 
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.json.model.Trigger;
-import net.minecraft.command.*;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 
 import java.util.ArrayList;

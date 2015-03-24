@@ -8,18 +8,13 @@ import mods.quiddity.redux.json.model.Pack;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.versioning.ArtifactVersion;
 import net.minecraftforge.fml.common.versioning.VersionRange;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
-import javax.script.ScriptException;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.security.cert.Certificate;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Dummy mod container to allow our custom resource pack to load the external resources requested by the packs.

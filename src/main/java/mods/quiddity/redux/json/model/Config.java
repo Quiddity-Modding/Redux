@@ -3,7 +3,6 @@ package mods.quiddity.redux.json.model;
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.JSONSingleton;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.message.FormattedMessage;
@@ -11,7 +10,10 @@ import org.apache.logging.log4j.message.FormattedMessage;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JSON Object model to handle generic Redux configurations and enabled Redux packs.

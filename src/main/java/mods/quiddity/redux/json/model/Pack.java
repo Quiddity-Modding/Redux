@@ -3,7 +3,6 @@ package mods.quiddity.redux.json.model;
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.JavaScript.ReduxJavascriptEngine;
 import mods.quiddity.redux.Redux;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FileUtils;

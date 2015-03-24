@@ -1,20 +1,17 @@
 package mods.quiddity.redux.JavaScript;
 
-import mods.quiddity.redux.Redux;
-import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.command.CommandResultStats;
+import net.minecraft.command.ICommandManager;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.StringUtils;
-
-import net.minecraft.command.ICommandManager;
-import net.minecraft.command.ICommandSender;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.script.ScriptEngineManager;
 
@@ -24,14 +21,25 @@ public class ReduxJavascriptEngine {
     private final Pack packRefrence;
 
     public ReduxJavascriptEngine(Pack pack) {
+        System.out.println(engineManager.getEngineFactories().toString()); // Debug Code for Ecu
         if (engineManager.getEngineByName("nashorn") != null) {
             engine = new NashornEngine();
         } else if (engineManager.getEngineByName("rhino") != null) {
             engine = new RhinoEngine();
-        } else {
+        } else if (engineManager.getEngineByName("javascript") != null) {
+            try {
+                if (Class.forName("jdk.nashorn.api.scripting.NashornScriptEngine") != null) {
+                    engine = new NashornEngine();
+                } else if (engineManager.getEngineByName("javascript") != null) {
+                    engine = new RhinoEngine();
+                }
+            } catch (ClassNotFoundException e) {
+                throw new AssertionError("Your Java Runtime Environment does not support JSR-223", e);
+            }
+        }
+        if (engine == null) {
             throw new AssertionError("Your Java Runtime Environment does not support JSR-223");
         }
-
         this.packRefrence = pack;
     }
 
