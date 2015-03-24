@@ -1,5 +1,6 @@
 package mods.quiddity.redux.JavaScript;
 
+import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.entity.Entity;
@@ -30,8 +31,6 @@ public class ReduxJavascriptEngine {
             throw new AssertionError("Your Java Runtime Environment does not support JSR-223");
         }
 
-        engine.addJavaObject("ReduxAPI", new ReduxAPI());
-
         this.packRefrence = pack;
     }
 
@@ -39,10 +38,15 @@ public class ReduxJavascriptEngine {
         return engine;
     }
 
+    public void init() {
+        engine.init();
+        engine.addJavaObject("ReduxAPI", new ReduxAPI());
+    }
+
     public class ReduxAPI implements ICommandSender {
         @SuppressWarnings("unused")
         public int runCommand(String... args) {
-            if (FMLCommonHandler.instance().getSide().isServer()) {
+            if (!Redux.proxy.isSinglePlayer()) {
                 ICommandManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
                 manager.executeCommand(this, StringUtils.join(args));
             }

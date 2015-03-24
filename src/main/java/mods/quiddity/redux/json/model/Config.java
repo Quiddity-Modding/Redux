@@ -79,9 +79,9 @@ public class Config {
                 // File cannot be null if p isn't null
                 packSourceFileMap.put(p, file);
                 idToPack.put(p.getId(), p);
-                if (FMLCommonHandler.instance().getSide().isServer()) {
+                if (!Redux.proxy.isSinglePlayer()) {
                     // Init JS Engine
-                    p.getJsEngine().getEngine().init();
+                    p.getJsEngine().init();
                 }
             }
         }

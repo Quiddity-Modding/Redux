@@ -7,6 +7,7 @@ import net.minecraft.command.ICommand;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -32,6 +33,9 @@ public class Redux {
 
     @Mod.Instance(MODID)
     public static Redux instance = null;
+
+    @SidedProxy(clientSide = "mods.quiddity.redux.ReduxClientProxy", serverSide = "mods.quiddity.redux.ReduxCommonProxy")
+    public static ReduxCommonProxy proxy;
 
     private Config reduxConfiguration = null;
     private final ReduxLogger logger = new ReduxLogger(MODID);

@@ -2,6 +2,7 @@ package mods.quiddity.redux.json.model;
 
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.JavaScript.ReduxJavascriptEngine;
+import mods.quiddity.redux.Redux;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nonnull;
@@ -68,10 +69,14 @@ public class Pack {
 
     private transient Map<String, Block> idMap = null;
     private transient boolean hasAddedBlocks = false;
-    private transient final ReduxJavascriptEngine jsEngine;
+    private transient ReduxJavascriptEngine jsEngine;
 
     public Pack() {
-        jsEngine = new ReduxJavascriptEngine(this);
+        if (Redux.proxy.isSinglePlayer()) {
+            jsEngine = null;
+        } else {
+            jsEngine = new ReduxJavascriptEngine(this);
+        }
     }
 
     public String getName() {
@@ -118,8 +123,6 @@ public class Pack {
     }
 
     public ReduxJavascriptEngine getJsEngine() {
-        if (FMLCommonHandler.instance().getSide().isClient())
-            return null;
         return jsEngine;
     }
 

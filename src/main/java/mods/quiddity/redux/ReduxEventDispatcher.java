@@ -52,7 +52,7 @@ public class ReduxEventDispatcher {
                 eventReceiver.receiveEvent(event);
             }
         }*/
-        if (FMLCommonHandler.instance().getSide().isServer()) {
+        if (!Redux.proxy.isSinglePlayer()) {
             for (Pack p : Redux.instance.getReduxConfiguration().getPacks()) {
                 if (p.getJsEngine().getEngine().hasMethod(event.getClass().getName())) {
                     try {
