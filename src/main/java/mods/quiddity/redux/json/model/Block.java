@@ -9,6 +9,7 @@ import net.minecraft.item.ItemBlock;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -275,7 +276,7 @@ public class Block {
         if (script == null && reduxExtendsBlock != null && reduxExtendsBlock.getScript() != null)
             return reduxExtendsBlock.getScript();
         if (script == null)
-            return null;
+            return Collections.EMPTY_LIST;
         return ImmutableList.copyOf(script);
     }
 

@@ -4,9 +4,19 @@ import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.JavaScript.ReduxJavascriptEngine;
 import mods.quiddity.redux.Redux;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.script.ScriptException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,14 +81,6 @@ public class Pack {
     private transient boolean hasAddedBlocks = false;
     private transient ReduxJavascriptEngine jsEngine;
 
-    public Pack() {
-        if (Redux.proxy.isSinglePlayer()) {
-            jsEngine = null;
-        } else {
-            jsEngine = new ReduxJavascriptEngine(this);
-        }
-    }
-
     public String getName() {
         return name;
     }
@@ -123,6 +125,37 @@ public class Pack {
     }
 
     public ReduxJavascriptEngine getJsEngine() {
+        if (jsEngine == null) {
+            jsEngine = new ReduxJavascriptEngine(this);
+            jsEngine.init();
+            File packFile = Redux.instance.getReduxConfiguration().getSourceForPack(this);
+            if (packFile.getParentFile().isDirectory()) {
+                File scripts = new File(packFile.getParentFile(), "scripts");
+                for (File script : FileUtils.listFiles(scripts, new String[]{"js"}, true)) {
+                    try {
+                        jsEngine.getEngine().loadScript(FileUtils.readFileToString(script));
+                    } catch (Exception e) {
+                        Redux.instance.getLogger().warn("Redux pack inconsistency. The script file: %s has errors.", scripts.getName());
+                    }
+                }
+            } else {
+                try {
+                    ZipFile packZip = new ZipFile(packFile.getParentFile());
+                    Enumeration<ZipArchiveEntry> entries = packZip.getEntries();
+                    while (entries.hasMoreElements()) {
+                        ZipArchiveEntry entry = entries.nextElement();
+                        if (entry.getName().endsWith(".js")) {
+                            InputStream scriptInputStream = packZip.getInputStream(entry);
+                            jsEngine.getEngine().loadScript(IOUtils.toString(scriptInputStream, Charset.defaultCharset()));
+                        }
+                    }
+                } catch (IOException e) {
+                    Redux.instance.getLogger().warn("Redux pack inconsistency. The pack file %s has vanished!.", packFile.getParentFile().getName());
+                } catch (ScriptException e) {
+                    Redux.instance.getLogger().warn("Redux pack inconsistency. A script file in pack: %s has errors.", packFile.getParentFile().getName());
+                }
+            }
+        }
         return jsEngine;
     }
 

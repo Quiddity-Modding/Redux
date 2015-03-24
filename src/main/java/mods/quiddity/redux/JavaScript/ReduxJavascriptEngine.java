@@ -1,6 +1,7 @@
 package mods.quiddity.redux.JavaScript;
 
 import mods.quiddity.redux.Redux;
+import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Pack;
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.entity.Entity;
@@ -44,9 +45,29 @@ public class ReduxJavascriptEngine {
     }
 
     public class ReduxAPI implements ICommandSender {
+        private Entity lastEntity = null;
+        private World lastWorld = null;
+        private BlockPos lastBlockPos = null;
+
         @SuppressWarnings("unused")
         public int runCommand(String... args) {
-            if (!Redux.proxy.isSinglePlayer()) {
+            if (FMLCommonHandler.instance().getMinecraftServerInstance() != null &&
+                    FMLCommonHandler.instance().getMinecraftServerInstance().isCallingFromMinecraftThread()) {
+                if (engine.hasObject("entity") && engine.getObject("entity") instanceof Entity) {
+                    lastEntity = (Entity) engine.getObject("entity");
+                } else {
+                    lastEntity = null;
+                }
+                if (engine.hasObject("world") && engine.getObject("world") instanceof World) {
+                    lastWorld = (World) engine.getObject("world");
+                } else {
+                    lastWorld = null;
+                }
+                if (engine.hasObject("pos") && engine.getObject("pos") instanceof BlockPos) {
+                    lastBlockPos = (BlockPos) engine.getObject("pos");
+                } else {
+                    lastBlockPos = null;
+                }
                 ICommandManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
                 manager.executeCommand(this, StringUtils.join(args));
             }
@@ -74,22 +95,22 @@ public class ReduxJavascriptEngine {
 
         @Override
         public BlockPos getPosition() {
-            return null;
+            return lastBlockPos == null ? lastEntity == null ? new BlockPos(0, 0, 0) : lastEntity.getPosition() :lastBlockPos;
         }
 
         @Override
         public Vec3 getPositionVector() {
-            return new Vec3(0, 0, 0);
+            return lastBlockPos == null ? lastEntity == null ? new Vec3(0, 0, 0) : lastEntity.getPositionVector() : new Vec3(lastBlockPos.getX(), lastBlockPos.getY(), lastBlockPos.getZ());
         }
 
         @Override
         public World getEntityWorld() {
-            return null;
+            return lastWorld == null ? lastEntity == null ? null : lastEntity.worldObj : lastWorld;
         }
 
         @Override
         public Entity getCommandSenderEntity() {
-            return null;
+            return lastEntity;
         }
 
         @Override

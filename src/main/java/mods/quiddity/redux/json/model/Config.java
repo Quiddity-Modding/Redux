@@ -35,12 +35,15 @@ public class Config {
     @Nullable
     protected List<String> packs;
 
+    private transient List<Pack> parsedPacks;
     private transient List<String> humanPackNames;
     private transient Map<Pack, File> packSourceFileMap;
     private transient Map<String, Pack> idToPack;
 
     public List<Pack> getPacks() {
-        List<Pack> parsedPacks = new ArrayList<Pack>();
+        if (parsedPacks != null)
+            return parsedPacks;
+        parsedPacks = new ArrayList<Pack>();
         humanPackNames = new ArrayList<String>();
         packSourceFileMap = new HashMap<Pack, File>();
         idToPack = new HashMap<String, Pack>();
@@ -79,13 +82,9 @@ public class Config {
                 // File cannot be null if p isn't null
                 packSourceFileMap.put(p, file);
                 idToPack.put(p.getId(), p);
-                if (!Redux.proxy.isSinglePlayer()) {
-                    // Init JS Engine
-                    p.getJsEngine().init();
-                }
             }
         }
-        return ImmutableList.copyOf(parsedPacks);
+        return parsedPacks;
     }
 
     public List<String> getPackNames() {

@@ -62,14 +62,14 @@ public class Redux {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         // Copy over default Redux Pack
-        File defaultPack = new File(reduxFolder, "default_pack.zip");
+        /*File defaultPack = new File(reduxFolder, "default_pack.zip");
         if (!defaultPack.exists()) {
             try {
                 copyResource(GROUP + "/redux/json/model/default_pack.zip", defaultPack);
             } catch (IOException e) {
                 FMLCommonHandler.instance().raiseException(e, "Redux: Error copying default Redux pack!", true);
             }
-        }
+        }*/
 
         // Load the packs
         new ReduxPackLoader(reduxConfiguration).loadPacks();
@@ -77,6 +77,7 @@ public class Redux {
 
     @EventHandler
     public void onServerStart(FMLServerStartingEvent event) {
+        ReduxEventDispatcher.getInstance(); // Init Event Dispatcher here because it is no longer used in ReduxCommandBlockTileEntity
         for (ICommand command : ReduxCommands.getCommands()) {
             event.registerServerCommand(command);
         }

@@ -37,7 +37,7 @@ public class RhinoEngine implements JavascriptEngine {
     }
 
     @Override
-    public boolean hasMethod(String name) {
+    public boolean hasObject(String name) {
         return rhinoEngine.get(name) != null;
     }
 
@@ -49,5 +49,10 @@ public class RhinoEngine implements JavascriptEngine {
         } else {
             throw new AssertionError("Your Rhino engine cannot invoke javascript functions! Redux will not function.");
         }
+    }
+
+    @Override
+    public Object getObject(String name) {
+        return rhinoEngine.get(name);
     }
 }

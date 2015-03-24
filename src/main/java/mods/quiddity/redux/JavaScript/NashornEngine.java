@@ -15,15 +15,15 @@ public class NashornEngine implements JavascriptEngine {
             killEngine();
         ClassLoader ccl = Thread.currentThread().getContextClassLoader();
         ccl = (ccl == null ? NashornScriptEngineFactory.class.getClassLoader() : ccl);
-        try {
-            /**
+        /*try {
+            *//**
              * This was implemented somewhere between Java 1.8.0_31 and 1.8.0_40
              * For now make it optional, the --no-java argument should do most of the sandboxing anyways.
-             */
+             *//*
             if (Class.forName("jdk.nashorn.api.scripting.ClassFilter") != null) {
                 nashornScriptEngine = (NashornScriptEngine) new NashornScriptEngineFactory().getScriptEngine(new String[]{"--no-java"}, ccl, new ReduxClassFilter());
             }
-        } catch (ClassNotFoundException ignored) { }
+        } catch (ClassNotFoundException ignored) { }*/
 
         if (nashornScriptEngine == null) {
             nashornScriptEngine = (NashornScriptEngine) new NashornScriptEngineFactory().getScriptEngine("--no-java");
@@ -51,13 +51,18 @@ public class NashornEngine implements JavascriptEngine {
     }
 
     @Override
-    public boolean hasMethod(String name) {
+    public boolean hasObject(String name) {
         return nashornScriptEngine.get(name) != null;
     }
 
     @Override
     public void callMethod(String name, Object... args) throws ScriptException, NoSuchMethodException {
         nashornScriptEngine.invokeFunction(name, args);
+    }
+
+    @Override
+    public Object getObject(String name) {
+        return nashornScriptEngine.get(name);
     }
 
     class ReduxClassFilter implements ClassFilter {

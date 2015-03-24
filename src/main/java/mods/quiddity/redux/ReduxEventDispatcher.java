@@ -7,6 +7,7 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.script.ScriptException;
+import java.lang.reflect.Field;
 
 /**
  * WeakReference event dispatcher. This handles firing all of the events for Redux blocks.
@@ -52,11 +53,36 @@ public class ReduxEventDispatcher {
                 eventReceiver.receiveEvent(event);
             }
         }*/
-        if (!Redux.proxy.isSinglePlayer()) {
+        if (FMLCommonHandler.instance().getMinecraftServerInstance() != null &&
+                FMLCommonHandler.instance().getMinecraftServerInstance().isCallingFromMinecraftThread()) {
             for (Pack p : Redux.instance.getReduxConfiguration().getPacks()) {
-                if (p.getJsEngine().getEngine().hasMethod(event.getClass().getName())) {
+                if (p.getJsEngine().getEngine().hasObject(event.getClass().getSimpleName())) {
                     try {
-                        p.getJsEngine().getEngine().callMethod(event.getClass().getName(), event);
+                        if (event.getClass().getField("world") != null) {
+                            Field worldField = event.getClass().getField("world");
+                            worldField.setAccessible(true);
+                            p.getJsEngine().getEngine().addJavaObject("world", worldField.get(event));
+                        }
+                    } catch (Exception ignored) {}
+                    try {
+                        if (event.getClass().getField("entity") != null) {
+                            Field worldField = event.getClass().getField("entity");
+                            worldField.setAccessible(true);
+                            p.getJsEngine().getEngine().addJavaObject("entity", worldField.get(event));
+                        }
+                    } catch (Exception ignored) {}
+                    try {
+                        if (event.getClass().getField("pos") != null) {
+                            Field worldField = event.getClass().getField("pos");
+                            worldField.setAccessible(true);
+                            p.getJsEngine().getEngine().addJavaObject("pos", worldField.get(event));
+                        }
+                    } catch (Exception ignored) {}
+
+                    try {
+
+                        p.getJsEngine().getEngine().callMethod(event.getClass().getSimpleName(), event);
+
                     } catch (ScriptException e) {
                         Redux.instance.getLogger().warn("Redux pack inconsistency. A script file in pack: %s has errors.", p.getName());
                     } catch (NoSuchMethodException e) {

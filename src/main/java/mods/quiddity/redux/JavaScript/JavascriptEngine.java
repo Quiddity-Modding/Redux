@@ -8,6 +8,7 @@ public interface JavascriptEngine {
     public void killEngine();
     public void restartEngine();
     public void addJavaObject(String name, Object object);
-    public boolean hasMethod(String name);
+    public boolean hasObject(String name);
     public void callMethod(String name, Object... args) throws ScriptException, NoSuchMethodException;
+    public Object getObject(String name);
 }
