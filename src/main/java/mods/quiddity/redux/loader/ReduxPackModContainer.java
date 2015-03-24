@@ -8,8 +8,16 @@ import mods.quiddity.redux.json.model.Pack;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.versioning.ArtifactVersion;
 import net.minecraftforge.fml.common.versioning.VersionRange;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
+import javax.script.ScriptException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.security.cert.Certificate;
 import java.util.*;
 
@@ -25,6 +33,33 @@ public class ReduxPackModContainer implements ModContainer {
 
     public ReduxPackModContainer(Pack reduxPack, Redux redux) {
         this.packFile = Redux.instance.getReduxConfiguration().getSourceForPack(reduxPack);
+
+        if (packFile.isDirectory()) {
+            File scripts = new File(packFile, "scripts");
+            for (File script : FileUtils.listFiles(scripts, new String[]{ ".js" }, true)) {
+                try {
+                    reduxPack.getJsEngine().getEngine().loadScript(FileUtils.readFileToString(script));
+                } catch (Exception e) {
+                    Redux.instance.getLogger().warn("Redux pack inconsistency. The script file: %s has errors.", scripts.getName());
+                }
+            }
+        } else {
+            try {
+                ZipFile packZip = new ZipFile(packFile);
+                Enumeration<ZipArchiveEntry> entries = packZip.getEntries();
+                while (entries.hasMoreElements()) {
+                    ZipArchiveEntry entry = entries.nextElement();
+                    if (entry.getName().endsWith(".js")) {
+                        InputStream scriptInputStream = packZip.getInputStream(entry);
+                        reduxPack.getJsEngine().getEngine().loadScript(IOUtils.toString(scriptInputStream, Charset.defaultCharset()));
+                    }
+                }
+            } catch (IOException e) {
+                Redux.instance.getLogger().warn("Redux pack inconsistency. The pack file %s has vanished!.", packFile.getName());
+            } catch (ScriptException e) {
+                Redux.instance.getLogger().warn("Redux pack inconsistency. A script file int pack: %s has errors.", packFile.getName());
+            }
+        }
 
         packMetadata = new ModMetadata();
         packMetadata.authorList = Lists.newArrayList(reduxPack.getAuthor());

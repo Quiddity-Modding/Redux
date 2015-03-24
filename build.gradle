@@ -16,6 +16,7 @@ buildscript {
 }
 
 apply plugin: 'forge'
+apply plugin: 'idea'
 
 version = "dev-" + System.getenv('BUILD_NUMBER')
 if (System.getenv('RELEASE') != null && System.getenv('RELEASE').equalsIgnoreCase("true")) {

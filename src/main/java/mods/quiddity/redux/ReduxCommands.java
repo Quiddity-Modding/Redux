@@ -2,8 +2,6 @@ package mods.quiddity.redux;
 
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.json.model.Trigger;
-import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.*;
 import net.minecraft.util.ChatComponentText;
 
@@ -27,7 +25,7 @@ public class ReduxCommands {
             try {
                 Trigger.TriggerEvent event = Trigger.TriggerEvent.valueOf(trigger);
                 if (event != null) {
-                    if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+                    /*if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
                         ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
 
                         if (Trigger.TriggerEvent.getTriggerEventFromForgeEvent(reduxBlockEventReceiver.getLastEvent().getClass()) == event) {
@@ -35,7 +33,7 @@ public class ReduxCommands {
                         }
                     } else {
                         throw new CommandException("This command is only useful in Redux Pack Blocks");
-                    }
+                    }*/
                 }
             } catch (IllegalArgumentException ignored) {
                 throw new CommandException("Trigger type %s does not exist!", trigger);
@@ -56,7 +54,7 @@ public class ReduxCommands {
                 throw new CommandException("Second parameter must be an integer!");
             }
 
-            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+            /*if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
                 ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
                 IBlockState blockState = sender.getEntityWorld().getBlockState(reduxBlockEventReceiver.getPosition());
                 if (blockState.getBlock() instanceof ReduxBlock) {
@@ -69,7 +67,7 @@ public class ReduxCommands {
                 }
             } else {
                 throw new CommandException("This command is only useful in Redux Pack Blocks");
-            }
+            }*/
             throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }
     });
@@ -86,7 +84,7 @@ public class ReduxCommands {
                 throw new CommandException("Second parameter must be an integer!");
             }
 
-            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+            /*if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
                 ReduxCommandBlockTileEntity.ReduxBlockEventReceiver reduxBlockEventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
                 IBlockState blockState = sender.getEntityWorld().getBlockState(reduxBlockEventReceiver.getPosition());
                 if (blockState.getBlock() instanceof ReduxBlock) {
@@ -100,7 +98,7 @@ public class ReduxCommands {
                 }
             } else {
                 throw new CommandException("This command is only useful in Redux Pack Blocks");
-            }
+            }*/
             throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }
     });
@@ -143,10 +141,10 @@ public class ReduxCommands {
                 }
             }
             sender.addChatMessage(new ChatComponentText(String.valueOf(result)));
-            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
+/*            if (sender instanceof ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) {
                 ReduxCommandBlockTileEntity.ReduxBlockEventReceiver eventReceiver = (ReduxCommandBlockTileEntity.ReduxBlockEventReceiver) sender;
                 eventReceiver.setLastTest(result);
-            }
+            }*/
             if (result == 0)
                 throw new CommandException("failure"); // I HATE YOU MOJANG!!!! DON'T USE EXCEPTIONS AS LOGIC!!!
         }

@@ -3,32 +3,14 @@ package mods.quiddity.redux;
 import mods.quiddity.redux.json.model.Block;
 import mods.quiddity.redux.json.model.Pack;
 import mods.quiddity.redux.json.model.Trigger;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandResultStats;
-import net.minecraft.command.ICommandManager;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
-import net.minecraft.world.World;
-import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.event.world.ChunkWatchEvent;
-import net.minecraftforge.event.world.ExplosionEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.Event;
 
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.*;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The tile entity for Redux Pack blocks that have custom command scripts.
@@ -45,10 +27,10 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
     protected CommandResultStats.Type lastResultType = CommandResultStats.Type.SUCCESS_COUNT;
     protected int lastResultAmount = 0;
 
-    protected final Set<ReduxBlockEventReceiver> eventReceivers = new HashSet<ReduxBlockEventReceiver>();
+/*    protected final Set<ReduxBlockEventReceiver> eventReceivers = new HashSet<ReduxBlockEventReceiver>();
     protected final Map<Trigger.TriggerEvent, Set<ReduxBlockEventReceiver>> specialReceivers = new HashMap<Trigger.TriggerEvent, Set<ReduxBlockEventReceiver>>();
     protected final Map<String, String> reduxVariables = new HashMap<String, String>();
-    protected final Stack<Integer> commandResultStack = new Stack<Integer>();
+    protected final Stack<Integer> commandResultStack = new Stack<Integer>();*/
 
     public ReduxCommandBlockTileEntity() {}
 
@@ -56,11 +38,11 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         return lastSuccessCount;
     }
 
-    public void addSpecialEventReceiver(Trigger.TriggerEvent event, ReduxBlockEventReceiver receiver) {
+/*    public void addSpecialEventReceiver(Trigger.TriggerEvent event, ReduxBlockEventReceiver receiver) {
         if (!specialReceivers.containsKey(event))
             specialReceivers.put(event, new HashSet<ReduxBlockEventReceiver>());
         specialReceivers.get(event).add(receiver);
-    }
+    }*/
 
     public void init(String packId, Block reduxBlock) {
         this.packId = packId;
@@ -74,13 +56,13 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         reduxBlock = p.getBlockFromId(blockId);
         if (reduxBlock == null) throw new AssertionError();
 
-        specialReceivers.clear();
-        eventReceivers.clear();
+/*        specialReceivers.clear();
+        eventReceivers.clear();*/
         setupTriggers();
     }
 
     private void setupTriggers() {
-        for (Trigger trigger : reduxBlock.getScript()) {
+        /*for (Trigger trigger : reduxBlock.getScript()) {
             // We have to keep a local strong reference. Otherwise GC would remove our event receiver right away.
             ReduxBlockEventReceiver receiver = new ReduxBlockEventReceiver(trigger);
             if (trigger.getTriggerEvent().getForgeEventClass() != Event.class) {
@@ -89,7 +71,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
             } else {
                 addSpecialEventReceiver(trigger.getTriggerEvent(), receiver);
             }
-        }
+        }*/
     }
 
     /**
@@ -99,13 +81,13 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
      * @return Were any receiversCalled
      */
     public boolean triggerSpecialEvent(Trigger.TriggerEvent event, Object... args) {
-        if (specialReceivers.containsKey(event)) {
+        /*if (specialReceivers.containsKey(event)) {
             lastEventArgs = args;
             for (ReduxBlockEventReceiver eventReceiver : specialReceivers.get(event)) {
                 eventReceiver.receiveEvent(null);
             }
             return true;
-        }
+        }*/
         return false;
     }
 
@@ -133,7 +115,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
         return new S35PacketUpdateTileEntity(this.pos, 0, nbttagcompound);
     }
 
-    protected class ReduxBlockEventReceiver implements ICommandSender {
+    /*protected class ReduxBlockEventReceiver implements ICommandSender {
         private final Trigger triggerScript;
         protected Event lastEvent = null;
 
@@ -386,7 +368,7 @@ public class ReduxCommandBlockTileEntity extends TileEntity {
                 icommandmanager.executeCommand(this, parsedCommand);
             }
         }
-    }
+    }*/
 
     protected static boolean isNumeric(String str) {
         NumberFormat formatter = NumberFormat.getInstance();

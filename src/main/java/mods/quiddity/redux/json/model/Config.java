@@ -3,11 +3,11 @@ package mods.quiddity.redux.json.model;
 import com.google.common.collect.ImmutableList;
 import mods.quiddity.redux.Redux;
 import mods.quiddity.redux.json.JSONSingleton;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.message.FormattedMessage;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -79,6 +79,10 @@ public class Config {
                 // File cannot be null if p isn't null
                 packSourceFileMap.put(p, file);
                 idToPack.put(p.getId(), p);
+                if (FMLCommonHandler.instance().getSide().isServer()) {
+                    // Init JS Engine
+                    p.getJsEngine().getEngine().init();
+                }
             }
         }
         return ImmutableList.copyOf(parsedPacks);
