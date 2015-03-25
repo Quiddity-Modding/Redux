@@ -38,6 +38,11 @@ minecraft {
     mappings = "snapshot_nodoc_20141130"
 }
 
+configurations {
+    bundledLib
+    compile.extendsFrom bundledLib
+}
+
 dependencies {
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
@@ -51,11 +56,10 @@ dependencies {
     // for more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-
+    bundledLib 'org.jruby:jruby-core:1.7.19'
 }
 
-processResources
-{
+processResources  {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
@@ -71,6 +75,13 @@ processResources
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
+    }
+}
+
+// Bundle Library
+jar {
+    from configurations.bundledLib.collect {
+        it.isDirectory() ? it : zipTree(it)
     }
 }
 

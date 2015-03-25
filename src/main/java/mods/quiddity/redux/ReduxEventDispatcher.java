@@ -56,32 +56,32 @@ public class ReduxEventDispatcher {
         if (FMLCommonHandler.instance().getMinecraftServerInstance() != null &&
                 FMLCommonHandler.instance().getMinecraftServerInstance().isCallingFromMinecraftThread()) {
             for (Pack p : Redux.instance.getReduxConfiguration().getPacks()) {
-                if (p.getJsEngine().getEngine().hasObject(event.getClass().getSimpleName())) {
+                if (p.getEngine().respondsToMethod(event.getClass().getSimpleName())) {
                     try {
                         if (event.getClass().getField("world") != null) {
                             Field worldField = event.getClass().getField("world");
                             worldField.setAccessible(true);
-                            p.getJsEngine().getEngine().addJavaObject("world", worldField.get(event));
+                            p.getEngine().addJavaObject("world", worldField.get(event));
                         }
                     } catch (Exception ignored) {}
                     try {
                         if (event.getClass().getField("entity") != null) {
                             Field worldField = event.getClass().getField("entity");
                             worldField.setAccessible(true);
-                            p.getJsEngine().getEngine().addJavaObject("entity", worldField.get(event));
+                            p.getEngine().addJavaObject("entity", worldField.get(event));
                         }
                     } catch (Exception ignored) {}
                     try {
                         if (event.getClass().getField("pos") != null) {
                             Field worldField = event.getClass().getField("pos");
                             worldField.setAccessible(true);
-                            p.getJsEngine().getEngine().addJavaObject("pos", worldField.get(event));
+                            p.getEngine().addJavaObject("pos", worldField.get(event));
                         }
                     } catch (Exception ignored) {}
 
                     try {
 
-                        p.getJsEngine().getEngine().callMethod(event.getClass().getSimpleName(), event);
+                        p.getEngine().callMethod(event.getClass().getSimpleName(), event);
 
                     } catch (ScriptException e) {
                         Redux.instance.getLogger().warn("Redux pack inconsistency. A script file in pack: %s has errors.", p.getName());

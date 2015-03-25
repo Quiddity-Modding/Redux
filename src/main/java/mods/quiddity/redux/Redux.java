@@ -1,5 +1,6 @@
 package mods.quiddity.redux;
 
+import mods.quiddity.redux.Engines.Ruby.ReduxJRubyEngine;
 import mods.quiddity.redux.json.JSONSingleton;
 import mods.quiddity.redux.json.model.Config;
 import mods.quiddity.redux.loader.ReduxPackLoader;
@@ -32,6 +33,7 @@ public class Redux {
     public static final String VERSION = "${version}";
     public static final String GROUP = "mods/quiddity";
     public static File reduxFolder;
+    public static final Class engineType = ReduxJRubyEngine.class;
 
     @Mod.Instance(MODID)
     public static Redux instance = null;

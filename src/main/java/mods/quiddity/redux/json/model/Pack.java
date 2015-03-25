@@ -1,20 +1,21 @@
 package mods.quiddity.redux.json.model;
 
 import com.google.common.collect.ImmutableList;
-import mods.quiddity.redux.JavaScript.ReduxJavascriptEngine;
+import mods.quiddity.redux.Engines.Engine;
+import mods.quiddity.redux.Engines.JavaScript.ReduxJavascriptEngine;
+import mods.quiddity.redux.Engines.Ruby.ReduxJRubyEngine;
 import mods.quiddity.redux.Redux;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +79,7 @@ public class Pack {
 
     private transient Map<String, Block> idMap = null;
     private transient boolean hasAddedBlocks = false;
-    private transient ReduxJavascriptEngine jsEngine;
+    private transient Engine engine;
 
     public String getName() {
         return name;
@@ -123,16 +124,26 @@ public class Pack {
         return description;
     }
 
-    public ReduxJavascriptEngine getJsEngine() {
-        if (jsEngine == null) {
-            jsEngine = new ReduxJavascriptEngine(this);
-            jsEngine.init();
+    public Engine getEngine() {
+        if (engine == null) {
+            String scriptExtention;
+            if (Redux.engineType == ReduxJavascriptEngine.class) {
+                engine = new ReduxJavascriptEngine(this);
+                scriptExtention = "js";
+            } else if (Redux.engineType == ReduxJRubyEngine.class) {
+                engine = new ReduxJRubyEngine(this);
+                scriptExtention = "rb";
+            } else {
+                throw new AssertionError("Ummmm, a final field is null?");
+            }
+
+            engine.init();
             File packFile = Redux.instance.getReduxConfiguration().getSourceForPack(this);
             if (packFile.getParentFile().isDirectory()) {
                 File scripts = new File(packFile.getParentFile(), "scripts");
-                for (File script : FileUtils.listFiles(scripts, new String[]{"js"}, true)) {
+                for (File script : FileUtils.listFiles(scripts, new String[]{ scriptExtention }, true)) {
                     try {
-                        jsEngine.getEngine().loadScript(FileUtils.readFileToString(script));
+                        engine.loadScript(script.getName(), new FileInputStream(script));
                     } catch (Exception e) {
                         Redux.instance.getLogger().warn("Redux pack inconsistency. The script file: %s has errors.", scripts.getName());
                     }
@@ -143,9 +154,9 @@ public class Pack {
                     Enumeration<ZipArchiveEntry> entries = packZip.getEntries();
                     while (entries.hasMoreElements()) {
                         ZipArchiveEntry entry = entries.nextElement();
-                        if (entry.getName().endsWith(".js")) {
+                        if (entry.getName().endsWith(".".concat(scriptExtention))) {
                             InputStream scriptInputStream = packZip.getInputStream(entry);
-                            jsEngine.getEngine().loadScript(IOUtils.toString(scriptInputStream, Charset.defaultCharset()));
+                            engine.loadScript(entry.getName(), scriptInputStream);
                         }
                     }
                 } catch (IOException e) {
@@ -155,7 +166,7 @@ public class Pack {
                 }
             }
         }
-        return jsEngine;
+        return engine;
     }
 
     @Override
